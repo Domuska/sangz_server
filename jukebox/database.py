@@ -256,9 +256,17 @@ class Connection(object):
         
     def modify_user(self, user_ID, username=None, realname=None, email=None, privilege_level=None):
         '''
-        NOTE:
-        SHOULD THIS METHOD ACTUALLY GIVE IN ALL THE PARAMETERS? 
-        OR SHOULD IT ITSELF SEE IF THINGS HAVE CHANGED?
+        A function call to modify user's information. If a field is not
+        provided, it is not modified, otherwise the new value will be set for the user
+        
+        :param user_id: ID of the user's info that is to be modified
+        :param username: a new username for the user
+        :param realname: new real name for the user
+        :param email: new email for the user
+        :param privilege_level: new privilege level for the user
+        
+        :return: the ID of the modified message, or None if no
+        message with provided ID was found
         '''
         
         self.con.row_factory = sqlite3.Row
@@ -296,11 +304,17 @@ class Connection(object):
         
         self.con.commit()
         
+        if cur.rowcount == 1:
+            return cur.lastrowid
+            
+        return None
+        
         
         
     def get_user(self, ID):
     
         '''
+        A function to get all information of a particular user
         
         :param ID: ID of the user whose info is to be retreived
         :return: dictionary containing all info of the user in following format:

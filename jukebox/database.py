@@ -219,6 +219,9 @@ class Connection(object):
             
     #API ITSELF STARTS HERE ------------------------------
     
+    
+    #USER TABLE STARTS HERE
+    
     def add_user(self, user_name, nickname, email, privilege_level):
     
         '''
@@ -241,16 +244,17 @@ class Connection(object):
         statement = 'INSERT INTO users (username, realname, email, privilege_level) VALUES (?,?,?,?)'
         values = (user_name, nickname, email, privilege_level)
         
-        
+        #pass the error on if new user could not be added
         try:
             cur.execute(statement, values)
         except:
-            return false
+            cur.close()
+            raise
         
         self.con.commit()
         
         if cur.rowcount < 1:
-            return false
+            return False
         return cur.lastrowid
         
         
@@ -386,17 +390,105 @@ class Connection(object):
         cur.execute(statement, values)
         idlist = cur.fetchall()
         #print idlist
+        cur.close()
         return idlist
         
         
         
         
+    #LOGIN TABLE BEGINS HERE
+        
+    def add_credentials(self, ID, password):
+
+        '''
+        add credentials to an user
+        :param ID: ID of the user whom credentials belong to
+        :param password: the new password that is to be set (hopefully hash value)
+        '''
+        
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        statement = 'INSERT INTO login (user_id, password) VALUES (?,?)'
+        values = (ID, password)
+        
+        
+        try:
+            cur.execute(statement, values)
+        except:
+            #TODO: HERE WE SHOULD MAYBE THROW AN ERROR?
+            cur.close()
+            raise
+        
+        self.con.commit()
+        
+        #pass the error on if password could not be added
+        if cur.rowcount < 1:
+            return False
+        return cur.lastrowid
         
         
         
+    def get_credentials(self, ID):
+        '''
+        Function to get password from one user
+        :param ID: ID of the user
+        :return: string containing the credentials
+        '''
+        
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (ID,)
+        cur.execute('SELECT password FROM login WHERE user_id = ?', values)
+        
+        row = cur.fetchone()
+        cur.close()
+        if row is None:
+            return None
+            
+        return row['password']
+        
+    def delete_credentials(self, ID):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (ID,)
+        cur.execute('DELETE FROM login WHERE user_id = ?', values)
+        
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return True
         
         
+    def update_credentials(self, ID, password):
         
+        '''
+        Function for updating login credentials for an user
+        :param ID: ID of the user
+        :param password: new password to be saved
+        :return: ID of the user whose password was updated, None if user was not found
+        '''
         
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (password, ID)
+        statement = 'UPDATE login SET password = ? WHERE user_id = ?'
+        cur.execute(statement, values)
+        
+        self.con.commit()
+        
+        if cur.rowcount == 1:
+            return cur.lastrowid
+            
+        return None
     
     

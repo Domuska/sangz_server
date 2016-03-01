@@ -282,24 +282,24 @@ class Connection(object):
             
             if realname == None:
                 realname = user_info['realname']
-                print realname
+                #print realname
         
             if username == None:
                 username = user_info['username']
-                print username
+                #print username
                 
             if email == None:
                 email = user_info['email']
-                print email
+                #print email
                 
             if privilege_level == None:
                 privilege_level = user_info['privilege_level']
-                print privilege_level
+                #print privilege_level
         
         
         statement = 'UPDATE users SET username=?, realname = ?, email = ?, privilege_level = ? WHERE user_ID = ?'
         values = (username, realname, email, privilege_level, user_ID)
-        print values
+        #print values
         cur.execute(statement, values)
         
         self.con.commit()
@@ -331,7 +331,7 @@ class Connection(object):
         values = (ID,)
     
         cur.execute(query, values)
-        
+        self.con.commit()
         
         row = cur.fetchone()
         if row is None:
@@ -341,12 +341,62 @@ class Connection(object):
         user_info = {'username': row[1], 'realname': row[2], 'email':row[3], 'privilege_level':row[4]}
         return user_info
         
+    def delete_user(self, ID):
+        
+        '''
+        A function to delete the a user's information
+        :param ID: ID of the user to be removed
+        :return: False if user with this ID was not found,
+        True otherwise
+        
+        '''
+        
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (ID,)
+        cur.execute('DELETE FROM users WHERE user_ID = ?', values)
+        
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return True
+        
+    def get_user_all(self, upperlimit, offset=None):
+        
+        '''
+        Function to get all users of the system
+        :param offset: the offset where to start gathering user IDs, can be None
+        :param upperlimit: the maximum number of IDs to return
+        :return: a list containing the IDs found
+        '''
+        
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        if offset is None:
+            offset = 0
+        
+        statement = 'SELECT user_ID FROM users LIMIT ? OFFSET ?'
+        values = (upperlimit, offset)
+        
+        cur.execute(statement, values)
+        idlist = cur.fetchall()
+        #print idlist
+        return idlist
         
         
         
         
         
         
-    
+        
+        
+        
+        
+        
     
     

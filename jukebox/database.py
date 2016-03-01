@@ -227,6 +227,8 @@ class Connection(object):
         :param nickname: nickname the user has chosen
         :param email: email supplied by user
         :param privilege_level: the level of privileges that the user has
+        :return id of the added user, or none if a new user was not added
+            into the database
         NOTE: SHOULD PRIVILEGE LEVELS EVEN BE GIVEN IN HERE? 
         SHOULD THERE BE ANOTHER METHOD THAT MODIFIES THESE PRIVILEGES?
         '''
@@ -239,14 +241,58 @@ class Connection(object):
         statement = 'INSERT INTO users (username, realname, email, privilege_level) VALUES (?,?,?,?)'
         values = (user_name, nickname, email, privilege_level)
         
-        cur.execute(statement, values)
+        
+        try:
+            cur.execute(statement, values)
+        except:
+            return false
         
         self.con.commit()
         
+        if cur.rowcount < 1:
+            return false
+        return cur.lastrowid
         
-    def modify_user(self):
+        
+    def modify_user(self, user_ID, name=None, nickname=None, email=None, privilege_level=None):
         '''
         NOTE:
         SHOULD THIS METHOD ACTUALLY GIVE IN ALL THE PARAMETERS? 
         OR SHOULD IT ITSELF SEE IF THINGS HAVE CHANGED?
         '''
+        
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        if name == None:
+            user_info = self.get_user(user_ID)
+            name = user_info['name']
+            print name
+        #TODO: add other if statements, if other parameters are empty
+        
+        
+        #statement = 'UPDATE users SET '
+        self.con.commit()
+        
+        
+        
+    def get_user(self, ID):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        query = 'SELECT * FROM users WHERE user_id = ?'
+        values = (ID,)
+    
+        cur.execute(query, values)
+        row = cur.fetchone()
+        
+        
+        user_info = {'name': row[1]}
+        
+        return user_info
+    
+    
+    

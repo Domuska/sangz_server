@@ -254,7 +254,7 @@ class Connection(object):
         return cur.lastrowid
         
         
-    def modify_user(self, user_ID, name=None, nickname=None, email=None, privilege_level=None):
+    def modify_user(self, user_ID, username=None, realname=None, email=None, privilege_level=None):
         '''
         NOTE:
         SHOULD THIS METHOD ACTUALLY GIVE IN ALL THE PARAMETERS? 
@@ -265,19 +265,49 @@ class Connection(object):
         cur = self.con.cursor()
         self.set_foreign_keys_support()
         
-        if name == None:
+        #if supplied values are None, get those values from the database before updating
+        #we could alternatively just build the update statement piece by piece
+        
+        #if any of the values are none, get the user's info
+        if realname == None or username == None or email == None or privilege_level == None:
             user_info = self.get_user(user_ID)
-            name = user_info['name']
-            print name
-        #TODO: add other if statements, if other parameters are empty
+            
+            if realname == None:
+                realname = user_info['realname']
+                print realname
+        
+            if username == None:
+                username = user_info['username']
+                print username
+                
+            if email == None:
+                email = user_info['email']
+                print email
+                
+            if privilege_level == None:
+                privilege_level = user_info['privilege_level']
+                print privilege_level
         
         
-        #statement = 'UPDATE users SET '
+        statement = 'UPDATE users SET username=?, realname = ?, email = ?, privilege_level = ? WHERE user_ID = ?'
+        values = (username, realname, email, privilege_level, user_ID)
+        print values
+        cur.execute(statement, values)
+        
         self.con.commit()
         
         
         
     def get_user(self, ID):
+    
+        '''
+        
+        :param ID: ID of the user whose info is to be retreived
+        :return: dictionary containing all info of the user in following format:
+        'name' = user's real name, 'nickname' = user's nickname, 'email' = user's email
+        'privilege_level' = users privilege level (normal user or admin)
+        OR false if a user with supplied ID was not found
+        '''
     
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
@@ -287,12 +317,22 @@ class Connection(object):
         values = (ID,)
     
         cur.execute(query, values)
+        
+        
         row = cur.fetchone()
+        if row is None:
+            print 'no user was found with ID'
+            return None
         
-        
-        user_info = {'name': row[1]}
-        
+        user_info = {'username': row[1], 'realname': row[2], 'email':row[3], 'privilege_level':row[4]}
         return user_info
+        
+        
+        
+        
+        
+        
+        
     
     
     

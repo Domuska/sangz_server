@@ -308,11 +308,6 @@ class Connection(object):
         
         self.con.commit()
         
-        if cur.rowcount == 1:
-            return cur.lastrowid
-            
-        return None
-        
         
         
     def get_user(self, ID):
@@ -529,6 +524,7 @@ class Connection(object):
         cur.execute('SELECT * FROM songs WHERE song_id = ?', values)
         
         row = cur.fetchone()
+        cur.close()
         
         if row is None:
             print 'no song with this ID found'
@@ -593,9 +589,6 @@ class Connection(object):
         self.con.commit()
         cur.close()
         
-        if cur.rowcount == 1:
-            return cur.lastrowid
-        return None
         
         
     def get_songs(self, upperlimit=None, offset=0):
@@ -619,11 +612,67 @@ class Connection(object):
         
     #ARTIST TABLE BEGINS HERE ----------------------------------------------
     
-    def add_artist():
+    def add_artist(self, artist_name):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
     
+        values = (artist_name,)
+        cur.execute('INSERT INTO artists (artist_name) VALUES (?)', values)
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return cur.lastrowid
+        
+    def get_artist(self, artist_ID):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
     
+        values = (artist_ID,)
+        cur.execute('SELECT * FROM artists WHERE artist_id = ?', values)
+        
+        row = cur.fetchone()
+        cur.close()
+        
+        if row is None:
+            print 'no artist with this ID found'
+            return None
+            
+        artist_info = {'artist_ID':row[0], 'artist_name':row[1]}
+        
+        return artist_info
+        
+    def delete_artist(self, artist_ID):
     
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (artist_ID,)
+        cur.execute('DELETE FROM artists WHERE artist_id = ?', values)
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return True
+        
+    def modify_artist(self, artist_ID, artist_name):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (artist_name, artist_ID)
+        cur.execute('UPDATE artists SET artist_name = ? WHERE artist_id = ?', values)
+        
+        self.con.commit()
+
+        
+        
+        
+        
+        
+        
     

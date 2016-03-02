@@ -1,4 +1,4 @@
-Authors: Tomi Lämsä
+Authors: Tomi Lamsa
 
 Instructions:
 	-do things.

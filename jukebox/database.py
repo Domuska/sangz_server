@@ -220,9 +220,9 @@ class Connection(object):
     #API ITSELF STARTS HERE ------------------------------
     
     
-    #USER TABLE STARTS HERE
+    #USER TABLE STARTS HERE ----------------------------------------------
     
-    def add_user(self, user_name, nickname, email, privilege_level):
+    def add_user(self, nickname, real_name, email, privilege_level):
     
         '''
         Add a new user into table users
@@ -242,7 +242,7 @@ class Connection(object):
         self.set_foreign_keys_support()
         
         statement = 'INSERT INTO users (username, realname, email, privilege_level) VALUES (?,?,?,?)'
-        values = (user_name, nickname, email, privilege_level)
+        values = (nickname, real_name, email, privilege_level)
         
         #pass the error on if new user could not be added
         try:
@@ -281,22 +281,22 @@ class Connection(object):
         #we could alternatively just build the update statement piece by piece
         
         #if any of the values are none, get the user's info
-        if realname == None or username == None or email == None or privilege_level == None:
+        if realname is None or username is None or email is None or privilege_level is None:
             user_info = self.get_user(user_ID)
             
-            if realname == None:
+            if realname is None:
                 realname = user_info['realname']
                 #print realname
         
-            if username == None:
+            if username is None:
                 username = user_info['username']
                 #print username
                 
-            if email == None:
+            if email is None:
                 email = user_info['email']
                 #print email
                 
-            if privilege_level == None:
+            if privilege_level is None:
                 privilege_level = user_info['privilege_level']
                 #print privilege_level
         
@@ -335,14 +335,13 @@ class Connection(object):
         values = (ID,)
     
         cur.execute(query, values)
-        self.con.commit()
         
         row = cur.fetchone()
         if row is None:
             print 'no user was found with ID'
             return None
         
-        user_info = {'username': row[1], 'realname': row[2], 'email':row[3], 'privilege_level':row[4]}
+        user_info = {'user_id':row[0], 'username':row[1], 'realname':row[2], 'email':row[3], 'privilege_level':row[4]}
         return user_info
         
     def delete_user(self, ID):
@@ -368,7 +367,7 @@ class Connection(object):
             return False
         return True
         
-    def get_user_all(self, upperlimit, offset=None):
+    def get_users(self, upperlimit=None, offset=0):
         
         '''
         Function to get all users of the system
@@ -381,22 +380,22 @@ class Connection(object):
         cur = self.con.cursor()
         self.set_foreign_keys_support()
         
-        if offset is None:
-            offset = 0
-        
+        #-1 works as 'no limit' in SQLite
+        if upperlimit is None:
+            upperlimit = -1
+
         statement = 'SELECT user_ID FROM users LIMIT ? OFFSET ?'
         values = (upperlimit, offset)
-        
         cur.execute(statement, values)
+            
         idlist = cur.fetchall()
-        #print idlist
         cur.close()
         return idlist
         
         
         
         
-    #LOGIN TABLE BEGINS HERE
+    #LOGIN TABLE BEGINS HERE ----------------------------------------------
         
     def add_credentials(self, ID, password):
 
@@ -417,7 +416,6 @@ class Connection(object):
         try:
             cur.execute(statement, values)
         except:
-            #TODO: HERE WE SHOULD MAYBE THROW AN ERROR?
             cur.close()
             raise
         
@@ -467,7 +465,7 @@ class Connection(object):
         return True
         
         
-    def update_credentials(self, ID, password):
+    def modify_credentials(self, ID, password):
         
         '''
         Function for updating login credentials for an user
@@ -490,5 +488,142 @@ class Connection(object):
             return cur.lastrowid
             
         return None
+    
+    
+    
+    #SONGS TABLE BEGINS HERE ----------------------------------------------
+    
+    def add_song(self, song_name, media_location, media_type, uploader_ID, artist_ID=None, album_ID=None ):
+        '''(String SONG_NAME, String MEDIA_LOC, String MEDIA_TYPE, int ARTIST_ID, int ALBUM_ID, int UPLOADER_ID)'''
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        statement = 'INSERT INTO songs (song_name, media_location, media_type, artist_id, album_id, uploader_id) VALUES  \
+        (?, ?, ?, ?, ?, ?)'
+        
+        
+        values = (song_name, media_location, media_type, artist_ID, album_ID, uploader_ID)
+        
+        #SQLite library inserts NULL instead of None automagically into the database
+        try:
+            cur.execute(statement, values)
+        except:
+            cur.close()
+            raise
+        
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return cur.lastrowid
+        
+    
+    def get_song(self, song_ID):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (song_ID,)
+        cur.execute('SELECT * FROM songs WHERE song_id = ?', values)
+        
+        row = cur.fetchone()
+        
+        if row is None:
+            print 'no song with this ID found'
+            return None
+            
+        song_info = {'song_id': row[0], 'song_name': row[1], 'media_location': row[2],
+        'media_type': row[3], 'artist_ID': row[4], 'album_ID': row[5], 'uploader_ID': row[6]}
+        
+        return song_info
+        
+    
+    def delete_song(self, song_ID):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (song_ID,)
+        cur.execute('DELETE FROM songs WHERE song_id = ?', values)
+        
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return True
+    
+    def modify_song(self, song_ID, song_name=None, media_location=None, media_type=None, artist_ID=None, album_ID=None, uploader_ID=None):
+        '''
+        (int SONG_ID, String SONG_NAME, String MEDIA_LOC, String MEDIA_TYPE, int ARTIST_ID, int ALBUM_ID, int UPLOADER_ID)
+        '''
+
+        if song_name is None or media_location is None or media_type is None or artist_ID is None or album_ID is None or uploader_ID is None:
+            song_info = self.get_song(song_ID)
+            
+            if song_name is None:
+                song_name = song_info['song_name']
+                
+            if media_location is None:
+                media_location = song_info['media_location']
+                
+            if media_type is None:
+                media_type = song_info['media_location']
+                
+            if artist_ID is None:
+                artist_ID = song_info['artist_ID']
+                
+            if album_ID is None:
+                album_ID = song_info['album_ID']
+            
+            if uploader_ID is None:
+                uploader_ID = song_info['uploader_ID']
+                
+                
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (song_name, media_location, media_type, artist_ID, album_ID, uploader_ID, song_ID)
+        cur.execute('UPDATE songs SET song_name = ?, media_location = ?, media_type = ?, \
+        artist_id = ?, album_id = ?, uploader_id = ? WHERE song_id = ?', values)
+        
+        self.con.commit()
+        cur.close()
+        
+        if cur.rowcount == 1:
+            return cur.lastrowid
+        return None
+        
+        
+    def get_songs(self, upperlimit=None, offset=0):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        #-1 works as 'no limit' in SQLite
+        if upperlimit is None:
+            upperlimit = -1
+        
+        values = (upperlimit, offset)
+        cur.execute('SELECT song_id FROM songs LIMIT ? OFFSET ?', values)
+            
+        idlist = cur.fetchall()
+        cur.close()
+        return idlist
+        
+        
+        
+        
+    #ARTIST TABLE BEGINS HERE ----------------------------------------------
+    
+    def add_artist():
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+    
     
     

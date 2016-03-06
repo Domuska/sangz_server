@@ -18,6 +18,7 @@ INSERT INTO "albums" VALUES(2,"Metallica",2);
 INSERT INTO "songs" VALUES(1,"Piiskaa prkl","/home/paviaani/media/mp3","mp3",3,1,3);
 INSERT INTO "songs" VALUES(2,"Heartbrake hostel","/home/paviaani/media/mp3","mp3",4,NULL,3);
 INSERT INTO "songs" VALUES(3,"One","/home/paviaani/media/mp3","mp3",2,2,1);
+INSERT INTO "songs" VALUES(4,"testsong","testdir","mp3",2,2,1);
 INSERT INTO "votes" VALUES(1,1,1,1456752443);
 INSERT INTO "votes" VALUES(2,1,2,1456752444);
 INSERT INTO "votes" VALUES(3,1,3,1456752445);

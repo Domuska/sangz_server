@@ -66,7 +66,7 @@ class LoginDBAPITestCase(unittest.TestCase):
 
 
 
-''' 
+'''
     def delete_credentials(self, ID):
     def add_credentials(self, ID, password):
 

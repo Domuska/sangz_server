@@ -73,10 +73,14 @@ class Engine(object):
         cur.execute(keys_on)
         with con:
             cur = con.cursor()
+            cur.execute("DELETE FROM votes")
+            cur.execute("DELETE FROM songs")
+            cur.execute("DELETE FROM albums")
+            cur.execute("DELETE FROM artists")
+            cur.execute("DELETE FROM login")
             cur.execute("DELETE FROM chat")
             cur.execute("DELETE FROM users")
-            #NOTE since we have ON DELETE CASCADE BOTH IN users_profile AND
-            #friends, WE DO NOT HAVE TO WORRY TO CLEAR THOSE TABLES.
+            #NOTE the order of cleanup matters since tables have foreign keys
 
     #METHODS TO CREATE AND POPULATE A DATABASE USING DIFFERENT SCRIPTS
     def create_tables(self, schema=None):

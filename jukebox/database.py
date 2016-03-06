@@ -673,9 +673,221 @@ class Connection(object):
         
         self.con.commit()
 
+
+        #ALBUM TABLE BEGINS HERE ----------------------------------------------
+    
+    def add_album(self, artist_name):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        values = (album_name,)
+        cur.execute('INSERT INTO albums (album_name) VALUES (?)', values)
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return cur.lastrowid
+        
+    def get_album(self, album_ID):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        values = (artist_ID,)
+        cur.execute('SELECT * FROM albums WHERE album_id = ?', values)
+        
+        row = cur.fetchone()
+        cur.close()
+        
+        if row is None:
+            print 'no albums with this ID found'
+            return None
+            
+        album_info = {'artist_ID':row[0], 'album_name':row[1]}
+        
+        return album_info
+        
+    def delete_album(self, album_ID):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (artist_ID,)
+        cur.execute('DELETE FROM albums WHERE album_id = ?', values)
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return True
+        
+    def modify_artist(self, album_ID, album_name):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (album_name, album_ID)
+        cur.execute('UPDATE albums SET album_name = ? WHERE album_id = ?', values)
+        
+        self.con.commit()
+
+        #VOTES TABLE BEGINS HERE ----------------------------------------------
+    
+    def add_votes(self, song_ID, user_ID):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        values = (song_ID,user_id, time.time())
+        cur.execute('INSERT INTO votes (song_ID,user_ID, Timestamp) VALUES (?,?,?)', values)
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return cur.lastrowid
+        
+    def get_votes_by_user(self, user_ID):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        values = (user_ID,)
+        cur.execute('SELECT * FROM votes WHERE user_ID = ?', values)
+        
+        row = cur.fetchone()
+        cur.close()
+        
+        if row is None:
+            print 'user_ID not found'
+            return None
+            
+         s_id = 'song_ID':row[0]
+         cur.execute('SELECT * from songs where song_id = ?',s_id,)
+
+        song_info = {'song_id': row[0], 'song_name': row[1], 'media_location': row[2],
+        'media_type': row[3], 'artist_ID': row[4], 'album_ID': row[5], 'uploader_ID': row[6]}
+        
+        return song_info
+        
+    def get_votes_by_song(self, song_ID):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (song_ID,)
+        cur.execute('SELECT count(*) FROM votes WHERE song_ID = ?', values)
+        self.con.commit()
+        
+        if row is None:
+            print 'song_ID not found'
+            return None
+
+        return cur.fetchone()
+        
+    def delete_votes_by_user(self, user_ID):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (user_ID)
+        cur.execute('DELETE from votes WHERE user_id = ?', values)
+        if cur.rowcount < 1:
+            return False
+        return True
+
+
+	def delete_votes_by_song(self, song_ID):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (song_ID)
+        cur.execute('DELETE from votes WHERE song_id = ?', values)
+        if cur.rowcount < 1:
+            return False
+        return True
+
+    def delete_vote_all(self):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        values = (song_ID)
+        cur.execute('DELETE from votes', )
+        if cur.rowcount < 1:
+            return False
+        return True
+        
+        self.con.commit()
+        
+        #CHAT TABLE BEGINS HERE ----------------------------------------------
+    
+    def add_message(self, user_ID, message):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        values = (user_ID, time.time(), message)
+        cur.execute('INSERT INTO chat_messages (user_ID, Timestamp, message) VALUES (?)', values)
+        self.con.commit()
+        
+        if cur.rowcount < 1:
+            return False
+        return cur.lastrowid
+        
+    def delete_message(self, message_ID):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+    
+        values = (message_ID,)
+        cur.execute('DELETE FROM chat_messages WHERE message_id = ?', values)
+        
+        row = cur.fetchone()
+        cur.close()
+        
+       if cur.rowcount < 1:
+            return False
+        return cur.lastrowid
+        
+    def get_messages_latest(self, no_of_msg=None):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        
+        if upperlimit is None:
+            upperlimit = 5
+
+        statement = 'SELECT * FROM chat_messages LIMIT ? OFFSET ?'
+        values = (upperlimit, offset)
+        cur.execute(statement, values)
+            
+        msg_list = cur.fetchall()
+        cur.close()
+        return msg_list
         
         
+    def get_messages_all(self,):
+    
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
         
+        values = (,)
+        cur.execute('SELECT * from chat_messages', values)
+
+        all_chat_msg = cur.fetchall()
+        cur.close()
+        return all_chat_msg
+        
+        self.con.commit()
         
         
         

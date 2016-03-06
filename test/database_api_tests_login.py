@@ -55,11 +55,18 @@ class LoginDBAPITestCase(unittest.TestCase):
         cred = self.connection.get_credentials(TESTCREDENTIALS_ID)
         self.assertEqual(cred, TESTCREDENTIALS_HASH)
 
+    def test_modify_credentials(self):
+        cred = self.connection.get_credentials(TESTCREDENTIALS_ID)
+        self.assertEqual(cred, TESTCREDENTIALS_HASH)
+        pass1 = "MotherOfAllPasswords"
+        self.connection.modify_credentials(TESTCREDENTIALS_ID,pass1)
+        cred2 = self.connection.get_credentials(TESTCREDENTIALS_ID)
+        self.assertEqual(cred2,pass1)
 
 
 
-''' test theese methods:
-    def modify_credentials(self, ID, password):
+
+''' 
     def delete_credentials(self, ID):
     def add_credentials(self, ID, password):
 

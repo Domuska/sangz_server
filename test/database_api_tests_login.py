@@ -63,14 +63,6 @@ class LoginDBAPITestCase(unittest.TestCase):
         cred2 = self.connection.get_credentials(TESTCREDENTIALS_ID)
         self.assertEqual(cred2,pass1)
 
-
-
-
-'''
-    def delete_credentials(self, ID):
-    def add_credentials(self, ID, password):
-
-'''
 if __name__ == '__main__':
-    print 'Start running user tests'
+    print 'Start running login tests'
     unittest.main()

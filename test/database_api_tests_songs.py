@@ -88,5 +88,5 @@ class SongsDBAPITestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    print 'Start running user tests'
+    print 'Start running Songs tests'
     unittest.main()

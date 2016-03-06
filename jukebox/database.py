@@ -73,7 +73,7 @@ class Engine(object):
         cur.execute(keys_on)
         with con:
             cur = con.cursor()
-            cur.execute("DELETE FROM messages")
+            cur.execute("DELETE FROM chat")
             cur.execute("DELETE FROM users")
             #NOTE since we have ON DELETE CASCADE BOTH IN users_profile AND
             #friends, WE DO NOT HAVE TO WORRY TO CLEAR THOSE TABLES.
@@ -386,10 +386,10 @@ class Connection(object):
         idlist = cur.fetchall()
         cur.close()
         return idlist
-        
-        
-        
-        
+
+
+
+
     #LOGIN TABLE BEGINS HERE ----------------------------------------------
         
     def add_credentials(self, ID, password):

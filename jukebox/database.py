@@ -317,8 +317,8 @@ class Connection(object):
         
         :param ID: ID of the user whose info is to be retreived
         :return: dictionary containing all info of the user in following format:
-        'name' = user's real name, 'nickname' = user's nickname, 'email' = user's email
-        'privilege_level' = users privilege level (normal user or admin)
+        'user_id' = user's id, 'realname' = user's real name, 'username' = user's nickname,
+        'email' = user's email, 'privilege_level' = users privilege level (normal user or admin)
         OR false if a user with supplied ID was not found
         '''
     

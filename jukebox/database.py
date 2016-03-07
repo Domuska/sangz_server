@@ -763,8 +763,9 @@ class Connection(object):
             print 'user_ID not found'
             return None
             
-         s_id = 'song_ID':row[0]
-         cur.execute('SELECT * from songs where song_id = ?',s_id,)
+        
+        s_id = row[0]
+        cur.execute('SELECT * from songs where song_id = ?',s_id,)
 
         song_info = {'song_id': row[0], 'song_name': row[1], 'media_location': row[2],
         'media_type': row[3], 'artist_ID': row[4], 'album_ID': row[5], 'uploader_ID': row[6]}
@@ -800,7 +801,7 @@ class Connection(object):
         return True
 
 
-	def delete_votes_by_song(self, song_ID):
+    def delete_votes_by_song(self, song_ID):
     
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
@@ -852,7 +853,7 @@ class Connection(object):
         row = cur.fetchone()
         cur.close()
         
-       if cur.rowcount < 1:
+        if cur.rowcount < 1:
             return False
         return cur.lastrowid
         
@@ -880,9 +881,8 @@ class Connection(object):
         cur = self.con.cursor()
         self.set_foreign_keys_support()
         
-        values = (,)
-        cur.execute('SELECT * from chat_messages', values)
-
+        cur.execute('SELECT * from chat_messages')
+        
         all_chat_msg = cur.fetchall()
         cur.close()
         return all_chat_msg

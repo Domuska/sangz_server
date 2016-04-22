@@ -1,8 +1,13 @@
-'''
-Created on 26.01.2013
-Modified on 23.02.2016
-@author: ivan
-'''
+
+# todo: we should prolly split this file into multiple ones. no point having this one big-ass file
+
+# Instructions:
+# navigate to root of sangz server, and run: python -m jukebox.resources
+# then open the page on your browser in address http://localhost:5000/sangz/XXX
+# for example, http://localhost:5000/sangz/api/playlist
+
+
+
 
 
 import json
@@ -33,6 +38,7 @@ app.debug = True
 app.config.update({'Engine': database.Engine()})
 # Start the RESTful API.
 api = Api(app)
+
 
 
 # ERROR HANDLERS
@@ -100,6 +106,13 @@ def close_connection(exc):
 
 
 
+# get the playlist, for now it just returns a dummy playlist
+#todo: implement the real playlist stuff somehow
+def get_playlist():
+    playList = {'1': 25, '2': 40, '3': 2}
+    return playList
+
+
 #Resources start from here
 
 # The classes are still skeletons, but these will be the resources and methods we will be implementing.
@@ -144,7 +157,49 @@ class Song(Resource):
 class Playlist(Resource):
 
     def get(self):
-        abort(404)
+
+        playlist = get_playlist()
+
+        # look for help in excercise 3 users resource get methods
+        envelope = {}
+        collection = {}
+        envelope["collection"] = collection
+
+        collection['version'] = "1.0"
+        collection['href'] = api.url_for(Playlist)
+        # todo: add the links when other resources are added to the routes
+        #collection['links'] =
+
+        items = []
+
+
+        for key in playlist:
+
+            # get song's name from db, add with name "song_name"
+            # get artist's name from db, add with name "artist_name" (if found from db, optional)
+            # get url for the individual song from function Song
+            song = { }
+            #song['href'] = "sangz/songs/" + playList[key]
+            song['value'] = key
+
+            #song['data'] = []
+            #value = {'name': 'song_name', 'value': 'Comic Bakery'}
+            #song['data'].append(value)
+            #value = {'name': 'artist_name', 'value': 'Instant Remedy'}
+            # song['data'].append(value)
+            # value = {'name': 'vote_count', 'value': '129'}
+            # song['data'].append(value)
+
+            items.append(song)
+
+        collection['items'] = items
+
+        string_data = json.dumps(envelope)
+
+        return Response(string_data, 200, mimetype="application/vnd.collection+json")
+
+        # return Response(string_data, 200, mimetype="text/html")
+
 
 class chat(Resource):
 
@@ -160,6 +215,10 @@ app.url_map.converters['regex'] = RegexConverter
 
 
 #Define the routes
+
+api.add_resource(Playlist, '/sangz/api/playlist',
+                 endpoint='playlist')
+'''
 api.add_resource(Messages, '/forum/api/messages/',
                  endpoint='messages')
 api.add_resource(Message, '/forum/api/messages/<regex("msg-\d+"):messageid>/',
@@ -174,7 +233,7 @@ api.add_resource(User, '/forum/api/users/<nickname>/',
                  endpoint='user')
 api.add_resource(History, '/forum/api/users/<nickname>/history/',
                  endpoint='history')
-
+'''
 
 #Redirect profile
 @app.route('/profiles/<profile_name>')

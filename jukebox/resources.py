@@ -23,10 +23,10 @@ import database
 # Copied from the excercise 3 source code
 COLLECTIONJSON = "application/vnd.collection+json"
 HAL = "application/hal+json"
-FORUM_USER_PROFILE ="/profiles/user-profile"
-FORUM_MESSAGE_PROFILE = "/profiles/message-profile"
+SANGZ_USER_PROFILE ="/profiles/user-profile"
+SANGZ_SONG_PROFILE = "/profiles/song-profile"
 ATOM_THREAD_PROFILE = "https://tools.ietf.org/html/rfc4685"
-APIARY_PROFILES_URL = "STUDENT_APIARY_PROJECT/#reference/profiles/"
+APIARY_PROFILES_URL = "http://docs.pwpsangz.apiary.io/#reference/hypermedia-profiles"
 
 # Define the application and the api
 # Copied from the excercise 3 source code
@@ -137,16 +137,147 @@ class User(Resource):
 
 
 class Songs(Resource):
+    '''
+    Resource Songs implementation
+    '''
     def get(self):
-        abort(404)
+        '''
+        get all songs in the system
+
+        Input: nil
+        '''
+
+        #connect to the db
+        songs_db = g.con.get_songs()
+
+        #create envelope
+        envelope = {}
+        collection = {}
+        envelope["collection"] = collection
+        collection['version'] = "1.0"
+        collection['href'] = api.url_for(songs)
+        #activate when Users are added
+        '''
+        collection['links'] = [
+                                {'prompt':'List of users in the app',
+                                'rel':'users','href':api.url_for(Users)
+                                }]
+        '''
+        collection['template'] = {
+        "data": [
+            {"prompt": "", "name":"song_name",
+             "value":"", "required":True},
+             {"prompt": "", "name":"media_location",
+             "value":"", "required":True},
+             {"prompt": "", "name":"media_type",
+             "value":"", "required":True},
+             {"prompt": "", "name":"artist_id",
+             "value":"", "required":False},
+             {"prompt": "", "name":"album_id",
+             "value":"", "required":False},
+             {"prompt": "", "name":"user_id",
+             "value":"", "required":False}
+            ]
+        }
+        
+        #create items
+        items = []
+        for song in songs_db:
+            _songid = song['songid']
+            _songname = song['song_name']
+            _songlocation = song['media_location']
+            _songtype = song['media_type']
+            _artist = song['artist_id']
+            _album = song['album_id']
+            _user = song['user_id']
+            _url = api.url_for(Songs, songid=_songid)
+            song = {}
+            song['href'] = _url
+            song['data'] = []
+            value = [
+            {"name":"song_name", "value":_songname},
+             {"name":"media_location", "value":_songlocation},
+             {"name":"media_type", "value":_songtype},
+             {"name":"artist_id"", value":_artist},
+             {"name":"album_id","value":_album},
+             {"name":"user_id","value":_user}
+            ]
+            song['data'].append(value)
+            song['links'] = []
+            items.append(song)
+        collection['items'] = items
+
+        string_data = json.dumps(envelope)
+
+        return Response(string_data, 200, mimetype="application/vnd.collection+json;/profiles/songs-profile")
 
     def post(self):
-        abort(404)
+        
+        if COLLECTIONJSON != request.headers.get('Content-Type',''):
+            return create_error_response(415, "UnsupportedMediaType",
+                                         "Use a JSON compatible format")
+        request_body = request.get_json(force=True)
+
+        try:
+            data = request_body['template']['data']
+            song_name = None
+            media_location = None
+            media_type = None
+            artist_id = None
+            album_id = None
+            user_id = None
+
+            for d in data:
+                #This code has a bad performance. We write it like this for
+                #simplicity. Another alternative should be used instead.
+                if d['name'] == 'song_name':
+                    song_name = d['value']
+                elif d['name'] == 'media_location':
+                    media_location = d['value']
+                elif d['name'] == 'media_type':
+                    media_type = d['value']
+                elif d['name'] == 'artist_id':
+                    artist_id = d['value']
+                elif d['name'] == 'album_id':
+                    album_id = d['value']
+                elif d['name'] == 'user_id':
+                    user_id = d['value']
+                
+
+            #CHECK THAT DATA RECEIVED IS CORRECT
+            if not song_name or not media_location:
+                return create_error_response(400, "Wrong request format",
+                                             "Be sure you include song name and location")
+        except:
+            #This is launched if either title or body does not exist or if
+            # the template.data array does not exist.
+            return create_error_response(400, "Wrong request format",
+                                         "Be sure you include song name and location")
+        #Create the new message and build the response code'
+        newsongid = g.con.create_song(songg_name, media_location, media_type, artist_id, album_id, user_id)
+        if not newsongid:
+            return create_error_response(500, "Problem with the database",
+                                         "Cannot access the database")
+
+        #Create the Location header with the id of the message created
+        url = api.url_for(Songs, songid=newsongid)
+
+        #RENDER
+        #Return the response
+        return Response(status=201, headers={'Location': url})
 
 
 class Song(Resource):
-    def get(self):
-        abort(404)
+    def get(self, songid):
+        songs_db = g.con.get_songs(songid)
+        if not songs_db:
+            errormessage = create_error_response(404, "Resource not found", "No song with found here!")
+            return (errormessage)
+
+        #songs_db != ERROR
+        envelope = {}
+        links = {}
+        envelope["_links"] = links
 
     def put(self):
         abort(404)
@@ -215,25 +346,27 @@ app.url_map.converters['regex'] = RegexConverter
 
 
 #Define the routes
+api.add_resource(Users, '/sangz/api/users/',
 
 api.add_resource(Playlist, '/sangz/api/playlist',
                  endpoint='playlist')
-'''
-api.add_resource(Messages, '/forum/api/messages/',
-                 endpoint='messages')
-api.add_resource(Message, '/forum/api/messages/<regex("msg-\d+"):messageid>/',
-                 endpoint='message')
-api.add_resource(User_public, '/forum/api/users/<nickname>/public_profile/',
-                 endpoint='public_profile')
-api.add_resource(User_restricted, '/forum/api/users/<nickname>/restricted_profile/',
-                 endpoint='restricted_profile')
-api.add_resource(Users, '/forum/api/users/',
-                 endpoint='users')
-api.add_resource(User, '/forum/api/users/<nickname>/',
-                 endpoint='user')
-api.add_resource(History, '/forum/api/users/<nickname>/history/',
-                 endpoint='history')
-'''
+
+api.add_resource(Songs, '/sangz/api/songs/',
+                 endpoint='songs')
+api.add_resource(Song, '/sangz/api/songs/<songid>/',
+                 endpoint='song')
+api.add_resource(Artists, '/sangz/api/artists/',
+                 endpoint='artists')
+api.add_resource(Artist, '/sangz/api/artists/<artistid>/',
+                 endpoint='artist')
+api.add_resource(Albums, '/sangz/api/albums/',
+                 endpoint='albums')
+api.add_resource(Album, '/sangz/api/albums/<albumid>',
+                 endpoint='albums')
+api.add_resource(Playlist, '/sangz/api/playlist/',
+                 endpoint='playlist')
+api.add_resource(Chat, '/sangz/api/chat/',
+                 endpoint='chat')
 
 #Redirect profile
 @app.route('/profiles/<profile_name>')

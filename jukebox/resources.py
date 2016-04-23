@@ -5,6 +5,7 @@
 # navigate to root of sangz server, and run: python -m jukebox.resources
 # then open the page on your browser in address http://localhost:5000/sangz/XXX
 # for example, http://localhost:5000/sangz/api/playlist
+# Also make sure you have flask and flask-restful libraries installed
 
 
 
@@ -106,12 +107,15 @@ def close_connection(exc):
         g.con.close()
 
 
-
 # get the playlist, for now it just returns a dummy playlist
-#todo: implement the real playlist stuff somehow
+# todo: implement the real playlist stuff somehow
 def get_playlist():
-    playlist = {'1': 25, '2': 40, '3': 2}
-    return playlist
+    '''
+        Function for getting the currently playing playlist
+        :return: A dictionary that has song_id: vote count as key-value pairs
+        '''
+
+    return g.con.get_all_songs_votes()
 
 
 #Resources start from here
@@ -139,7 +143,7 @@ class User(Resource):
 
 class Songs(Resource):
     def get(self):
-        abort(404)
+        return Response("hello world", 200, mimetype="text/html")
 
     def post(self):
         abort(404)
@@ -155,23 +159,25 @@ class Song(Resource):
     def delete(self):
         abort(404)
 
+
 class Playlist(Resource):
 
     def get(self):
 
         playlist = get_playlist()
 
-
-
         # look for help in exercise 3 users resource get methods
         envelope = {}
         collection = {}
-        envelope["collection"] = collection
+        envelope['collection'] = collection
 
         collection['version'] = "1.0"
         collection['href'] = api.url_for(Playlist)
         # todo: add the links when other resources are added to the routes
-        #collection['links'] =
+        collection['links'] = [{'prompt': 'see the full list of songs',
+                                'rel':'songs',
+                                'href': api.url_for(Songs)}
+                               ]
 
         items = []
 
@@ -206,9 +212,7 @@ class Playlist(Resource):
         return Response(string_data, 200, mimetype="application/vnd.collection+json")
 
 
-
-
-class chat(Resource):
+class Chat(Resource):
 
     def get(self):
         abort(404)
@@ -227,7 +231,11 @@ api.add_resource(Playlist, '/sangz/api/playlist/',
                  endpoint='playlist')
 
 api.add_resource(Song, '/sangz/api/songs/<song_id>',
+                 endpoint='song')
+
+api.add_resource(Songs, '/sangz/api/songs/',
                  endpoint='songs')
+
 '''
 api.add_resource(Messages, '/forum/api/messages/',
                  endpoint='messages')

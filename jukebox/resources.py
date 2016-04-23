@@ -163,8 +163,22 @@ class Song(Resource):
 class Playlist(Resource):
 
     def get(self):
+        '''
+        Get the playlist as it currently is on the server
 
-        # todo: add in documentation how this function works
+        RESPONSE:
+
+        Media type: application/vnd.collection+json
+
+        Profile: Playlist profile
+
+        Link relations: self, song, songs
+
+        Response status codes
+        200 if all is okay
+
+        '''
+
         playlist = get_playlist()
 
 
@@ -189,17 +203,24 @@ class Playlist(Resource):
             song = { }
             song['href'] = api.url_for(Song, song_id=key)
 
+            # get an individual song's details using the key in playlist dictionary
             song_db = g.con.get_song(key)
 
+            # get the artist's id from song_db and use it to get the artist's info from db
             artist_db = g.con.get_artist(song_db.get('artist_ID', 'None'))
             vote_count = g.con.get_votes_by_song(key)
-
-            # todo: handle the case if there is no artist for the listed song
 
             song['data'] = []
             value = {'name': 'song_name', 'value': song_db.get('song_name')}
             song['data'].append(value)
-            value = {'name': 'artist_name', 'value': artist_db.get('artist_name')}
+
+            # no artist for this song
+            if artist_db is None:
+                value = {'name': 'artist_name', 'value': ''}
+
+            else:
+                value = {'name': 'artist_name', 'value': artist_db.get('artist_name')}
+
             song['data'].append(value)
             value = {'name': 'vote_count', 'value': vote_count.get('votes')}
             song['data'].append(value)
@@ -236,6 +257,8 @@ api.add_resource(Song, '/sangz/api/songs/<song_id>',
 
 api.add_resource(Songs, '/sangz/api/songs/',
                  endpoint='songs')
+
+
 
 '''
 api.add_resource(Messages, '/forum/api/messages/',

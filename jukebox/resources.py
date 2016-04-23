@@ -198,8 +198,6 @@ class Playlist(Resource):
 
 
         for key in playlist:
-
-
             song = { }
             song['href'] = api.url_for(Song, song_id=key)
 
@@ -237,7 +235,45 @@ class Playlist(Resource):
 class Chat(Resource):
 
     def get(self):
-        abort(404)
+
+        envelope = {}
+        collection = {}
+        envelope['collection'] = collection
+
+        collection['version'] = '1.0'
+        collection['href'] = api.url_for(Chat)
+        # todo: add links when other resources are added to the routes
+
+        items = []
+
+        chat_db = g.con.get_messages_all()
+
+        for message_row in chat_db:
+            message = {}
+            # todo: handle if user_id is missing
+            # todo: not really nice to just use mysterious array rows, figure out better way
+            user_db = g.con.get_user(message_row[1])
+
+            message['data'] = []
+
+            value = {'name': 'message_body', 'value': message_row[3]}
+            message['data'].append(value)
+
+            value = {'name': 'timestamp', 'value': message_row[2]}
+            message['data'].append(value)
+
+            value = {'name': 'user_name', 'value': user_db.get('username')}
+            message['data'].append(value)
+
+            items.append(message)
+
+        collection['items'] = items
+
+        string_data = json.dumps(envelope)
+
+        return Response(string_data, 200, mimetype="application/vnd.collection+json")
+
+
     def post(self):
         abort(404)
 
@@ -258,7 +294,8 @@ api.add_resource(Song, '/sangz/api/songs/<song_id>',
 api.add_resource(Songs, '/sangz/api/songs/',
                  endpoint='songs')
 
-
+api.add_resource(Chat, '/sangz/api/chat',
+                 endpoint='chat')
 
 '''
 api.add_resource(Messages, '/forum/api/messages/',

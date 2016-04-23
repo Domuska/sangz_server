@@ -861,7 +861,7 @@ class Connection(object):
         self.set_foreign_keys_support()
     
         values = (user_ID, time.time(), message)
-        cur.execute('INSERT INTO chat_messages (user_ID, Timestamp, message) VALUES (?)', values)
+        cur.execute('INSERT INTO chat (user_ID, Timestamp, message) VALUES (?)', values)
         self.con.commit()
         
         if cur.rowcount < 1:
@@ -874,7 +874,7 @@ class Connection(object):
         self.set_foreign_keys_support()
     
         values = (message_ID,)
-        cur.execute('DELETE FROM chat_messages WHERE message_id = ?', values)
+        cur.execute('DELETE FROM chat WHERE message_id = ?', values)
         
         row = cur.fetchone()
         cur.close()
@@ -892,7 +892,7 @@ class Connection(object):
         if upperlimit is None:
             upperlimit = 5
 
-        statement = 'SELECT * FROM chat_messages LIMIT ? OFFSET ?'
+        statement = 'SELECT * FROM chat LIMIT ? OFFSET ?'
         values = (upperlimit, offset)
         cur.execute(statement, values)
             
@@ -907,7 +907,7 @@ class Connection(object):
         cur = self.con.cursor()
         self.set_foreign_keys_support()
         
-        cur.execute('SELECT * from chat_messages')
+        cur.execute('SELECT * from chat')
         
         all_chat_msg = cur.fetchall()
         cur.close()

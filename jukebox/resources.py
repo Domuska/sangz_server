@@ -164,9 +164,10 @@ class Playlist(Resource):
 
     def get(self):
 
+        # todo: add in documentation how this function works
         playlist = get_playlist()
 
-        # look for help in exercise 3 users resource get methods
+
         envelope = {}
         collection = {}
         envelope['collection'] = collection
@@ -184,9 +185,7 @@ class Playlist(Resource):
 
         for key in playlist:
 
-            # get song's name from db, add with name "song_name"
-            # get artist's name from db, add with name "artist_name" (if found from db, optional)
-            # get url for the individual song from function Song
+
             song = { }
             song['href'] = api.url_for(Song, song_id=key)
 
@@ -194,6 +193,8 @@ class Playlist(Resource):
 
             artist_db = g.con.get_artist(song_db.get('artist_ID', 'None'))
             vote_count = g.con.get_votes_by_song(key)
+
+            # todo: handle the case if there is no artist for the listed song
 
             song['data'] = []
             value = {'name': 'song_name', 'value': song_db.get('song_name')}

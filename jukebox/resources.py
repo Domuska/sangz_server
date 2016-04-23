@@ -19,8 +19,9 @@ from werkzeug.exceptions import NotFound,  UnsupportedMediaType
 from utils import RegexConverter
 import database
 
+# todo: edit these to actually present things in our project
 # Constants for hypermedia formats and profiles
-# Copied from the excercise 3 source code
+# Copied from the exercise 3 source code
 COLLECTIONJSON = "application/vnd.collection+json"
 HAL = "application/hal+json"
 FORUM_USER_PROFILE ="/profiles/user-profile"
@@ -29,7 +30,7 @@ ATOM_THREAD_PROFILE = "https://tools.ietf.org/html/rfc4685"
 APIARY_PROFILES_URL = "STUDENT_APIARY_PROJECT/#reference/profiles/"
 
 # Define the application and the api
-# Copied from the excercise 3 source code
+# Copied from the exercise 3 source code
 app = Flask(__name__)
 app.debug = True
 # Set the database Engine. In order to modify the database file (e.g. for
@@ -42,7 +43,7 @@ api = Api(app)
 
 
 # ERROR HANDLERS
-# Copied from the excercise 3 source code
+# Copied from the exercise 3 source code
 # http://soabits.blogspot.no/2013/05/error-handling-considerations-and-best.html
 # I should define a profile for the error.
 def create_error_response(status_code, title, message=None):
@@ -67,23 +68,23 @@ def create_error_response(status_code, title, message=None):
     response.status_code = status_code
     return response
 
-# Copied from the excercise 3 source code
+# Copied from the exercise 3 source code
 @app.errorhandler(404)
 def resource_not_found(error):
     return create_error_response(404, "Resource not found",
                                  "This resource url does not exit")
-# Copied from the excercise 3 source code
+# Copied from the exercise 3 source code
 @app.errorhandler(400)
 def resource_request_malformed(error):
     return create_error_response(400, "Malformed input format",
                                  "The format of the input is incorrect")
-# Copied from the excercise 3 source code
+# Copied from the exercise 3 source code
 @app.errorhandler(500)
 def unknown_error(error):
     return create_error_response(500, "Error",
                     "The system has failed. Please, contact the administrator")
 
-# Copied from the excercise 3 source code
+# Copied from the exercise 3 source code
 @app.before_request
 def connect_db():
     '''Creates a database connection before the request is proccessed.
@@ -95,7 +96,7 @@ def connect_db():
 
 
 # HOOKS
-# Copied from the excercise 3 source code
+# Copied from the exercise 3 source code
 @app.teardown_request
 def close_connection(exc):
     ''' Closes the database connection
@@ -109,15 +110,15 @@ def close_connection(exc):
 # get the playlist, for now it just returns a dummy playlist
 #todo: implement the real playlist stuff somehow
 def get_playlist():
-    playList = {'1': 25, '2': 40, '3': 2}
-    return playList
+    playlist = {'1': 25, '2': 40, '3': 2}
+    return playlist
 
 
 #Resources start from here
 
 # The classes are still skeletons, but these will be the resources and methods we will be implementing.
 # The skeletons are still missing their proper arguments, add them as you work.
-# The original methods from excercise 3 are removed, but take a look at them for help as you work.
+# The original methods from exercise 3 are removed, but take a look at them for help as you work.
 
 class Users(Resource):
 
@@ -145,8 +146,8 @@ class Songs(Resource):
 
 
 class Song(Resource):
-    def get(self):
-        abort(404)
+    def get(self, song_id):
+        return Response(song_id, 200, mimetype="text/html")
 
     def put(self):
         abort(404)
@@ -160,7 +161,9 @@ class Playlist(Resource):
 
         playlist = get_playlist()
 
-        # look for help in excercise 3 users resource get methods
+
+
+        # look for help in exercise 3 users resource get methods
         envelope = {}
         collection = {}
         envelope["collection"] = collection
@@ -179,16 +182,20 @@ class Playlist(Resource):
             # get artist's name from db, add with name "artist_name" (if found from db, optional)
             # get url for the individual song from function Song
             song = { }
-            #song['href'] = "sangz/songs/" + playList[key]
-            song['value'] = key
+            song['href'] = api.url_for(Song, song_id=key)
 
-            #song['data'] = []
-            #value = {'name': 'song_name', 'value': 'Comic Bakery'}
-            #song['data'].append(value)
-            #value = {'name': 'artist_name', 'value': 'Instant Remedy'}
-            # song['data'].append(value)
-            # value = {'name': 'vote_count', 'value': '129'}
-            # song['data'].append(value)
+            song_db = g.con.get_song(key)
+
+            artist_db = g.con.get_artist(song_db.get('artist_ID', 'None'))
+            vote_count = g.con.get_votes_by_song(key)
+
+            song['data'] = []
+            value = {'name': 'song_name', 'value': song_db.get('song_name')}
+            song['data'].append(value)
+            value = {'name': 'artist_name', 'value': artist_db.get('artist_name')}
+            song['data'].append(value)
+            value = {'name': 'vote_count', 'value': vote_count.get('votes')}
+            song['data'].append(value)
 
             items.append(song)
 
@@ -198,7 +205,7 @@ class Playlist(Resource):
 
         return Response(string_data, 200, mimetype="application/vnd.collection+json")
 
-        # return Response(string_data, 200, mimetype="text/html")
+
 
 
 class chat(Resource):
@@ -216,8 +223,11 @@ app.url_map.converters['regex'] = RegexConverter
 
 #Define the routes
 
-api.add_resource(Playlist, '/sangz/api/playlist',
+api.add_resource(Playlist, '/sangz/api/playlist/',
                  endpoint='playlist')
+
+api.add_resource(Song, '/sangz/api/songs/<song_id>',
+                 endpoint='songs')
 '''
 api.add_resource(Messages, '/forum/api/messages/',
                  endpoint='messages')

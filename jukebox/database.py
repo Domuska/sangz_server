@@ -779,14 +779,18 @@ class Connection(object):
         self.set_foreign_keys_support()
         
         values = (song_ID,)
-        cur.execute('SELECT count(*) FROM votes WHERE song_ID = ?', values)
-        self.con.commit()
-        
+        cur.execute('SELECT count(*) FROM votes WHERE song_id = ?', values)
+
+        row = cur.fetchone()
+
         if row is None:
             print 'song_ID not found'
             return None
 
-        return cur.fetchone()
+        song_votes = {'votes': row[0]}
+
+        return song_votes
+
         
     def delete_votes_by_user(self, user_ID):
     

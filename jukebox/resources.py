@@ -222,7 +222,6 @@ class Songs(Resource):
         string_data = json.dumps(envelope)
 
         return Response(string_data, 200, mimetype="application/vnd.collection+json;/profiles/songs-profile")
-        return Response("hello world", 200, mimetype="text/html")
 
     def post(self):
         
@@ -267,7 +266,7 @@ class Songs(Resource):
             return create_error_response(400, "Wrong request format",
                                          "Be sure you include song name and location")
         #Create the new message and build the response code'
-        newsongid = g.con.create_song(songg_name, media_location, media_type, artist_id, album_id, user_id)
+        newsongid = g.con.create_song(song_name, media_location, media_type, artist_id, album_id, user_id)
         if not newsongid:
             return create_error_response(500, "Problem with the database",
                                          "Cannot access the database")
@@ -291,15 +290,150 @@ class Song(Resource):
         envelope = {}
         links = {}
         envelope["_links"] = links
-    def get(self, song_id):
-        return Response(song_id, 200, mimetype="text/html")
+        _curies = [
+            {
+                "name": "song",
+                "href": SANGZ_SONG_PROFILE + "/{rels}",
+                "templated": True
+            },
+            {
+                "name": "user",
+                "href": SANGZ_USER_PROFILE + "/{rels}",
+                "templated": True
+            }
+        ]
+        links['curies'] = _curies
+        links['self'] = {'href': api.url_for(Song, songid = songid),
+                        'profile': SANGZ_SONG_PROFILE}
+        links['collection'] = {'href':api.url_for(Songs),
+                                'profile': SANGZ_SONG_PROFILE,
+                                'type': COLLECTIONJSON}
+        links['msg:reply'] = {'href': api.url_for(Song, songid = songid),
+                                'profile': SANGZ_SONG_PROFILE}
 
-    def put(self):
-        abort(404)
+        #template again
+        envelope['template'] = {
+            "data": [
+                {"prompt": "", "name":"song_name",
+                 "value":"", "required":True},
+                 {"prompt": "", "name":"media_location",
+                 "value":"", "required":True},
+                 {"prompt": "", "name":"media_type",
+                 "value":"", "required":True},
+                 {"prompt": "", "name":"artist_id",
+                 "value":"", "required":False},
+                 {"prompt": "", "name":"album_id",
+                 "value":"", "required":False},
+                 {"prompt": "", "name":"user_id",
+                 "value":"", "required":False}
+            ]
+        }
 
-    def delete(self):
-        abort(404)
+        string_data = json.dumps(envelope)
 
+        return Response(string_data, 200, mimetype="application/hal+json;/profiles/songs-profile")
+    
+
+    def put(self, songid):
+        #CHECK THAT SONG EXISTS
+        songs_db = g.con.get_songs(songid)
+        if not songs_db:
+            errormessage = create_error_response(404, "Resource not found", "No song found here!")
+            return (errormessage)
+
+        if COLLECTIONJSON != request.headers.get('Content-Type',''):
+            return create_error_response(415, "UnsupportedMediaType",
+                                         "Use a JSON compatible format")
+
+
+        #PARSE THE REQUEST
+        #Extract the request body. In general would be request.data
+        #Since the request is JSON I use request.get_json
+        #get_json returns a python dictionary after serializing the request body
+        #get_json returns None if the body of the request is not formatted
+        # using JSON
+        request_body = request.get_json(force=True)
+        if not request_body:
+            return create_error_response(415, "Unsupported Media Type",
+                                         "Use a JSON compatible format"
+                                        )
+
+        try:
+            data = request_body['template']['data']
+            song_name = None
+            media_location = None
+            media_type = None
+            artist_id = None
+            album_id = None
+            user_id = None
+
+            for d in data:
+                #This code has a bad performance. We write it like this for
+                #simplicity. Another alternative should be used instead.
+                if d['name'] == 'song_name':
+                    song_name = d['value']
+                elif d['name'] == 'media_location':
+                    media_location = d['value']
+                elif d['name'] == 'media_type':
+                    media_type = d['value']
+                elif d['name'] == 'artist_id':
+                    artist_id = d['value']
+                elif d['name'] == 'album_id':
+                    album_id = d['value']
+                elif d['name'] == 'user_id':
+                    user_id = d['value']
+                
+
+            #CHECK THAT DATA RECEIVED IS CORRECT
+            if not song_name or not media_location:
+                return create_error_response(400, "Wrong request format",
+                                             "Be sure you include song name and location")
+        except:
+            #This is launched if either title or body does not exist or if
+            # the template.data array does not exist.
+            return create_error_response(400, "Wrong request format",
+                                         "Be sure you include song name and location")
+        #Create the new message and build the response code'
+        newsongid = g.con.modify_song(song_name, media_location, media_type, artist_id, album_id, user_id)
+        if not newsongid:
+            return create_error_response(500, "Problem with the database",
+                                         "Cannot access the database")
+        
+
+    def delete(self, songid):
+        if g.con.delete_song(songid):
+            return '', 204
+        else:
+            #Send error message
+            return create_error_response(404, "Unable to delete",
+                                         "There is no song with this ID"
+                                        )
+
+
+    def upvote(self, songid):
+        songs_db = g.con.get_songs(songid)
+        if not songs_db:
+            errormessage = create_error_response(404, "Resource not found", "No song found here!")
+            return (errormessage)
+
+        global votes_on_songs = {} 
+        # read comments that using global keyword is a bad practice
+        # maybe we Mika/Ivan can help us later?
+        if songid in votes_on_songs:
+            votes_on_songs[songid] += 1
+        else votes_on_songs[songid] = 1
+
+
+    def downvote(self, songid):
+        songs_db = g.con.get_songs(songid)
+        if not songs_db:
+            errormessage = create_error_response(404, "Resource not found", "No song found here!")
+            return (errormessage)
+
+        votes_on_songs = {}
+        if songid in votes_on_songs:
+            votes_on_songs[songid] -= 1
+        else votes_on_songs[songid] = 0
 
 class Playlist(Resource):
 

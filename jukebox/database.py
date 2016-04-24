@@ -804,15 +804,9 @@ class Connection(object):
         playlist = { }
 
         for row in cur:
-
-            #default_data['item3'] = 3
             playlist[str(row[0])] = self.get_votes_by_song(row[0])
 
         return playlist
-
-        # poll get_votes_by_song with the ids gotten into the cursor
-        # marry the id-vote_count into a dictionary
-        # return the dictionary
 
     def delete_votes_by_user(self, user_ID):
     
@@ -859,7 +853,7 @@ class Connection(object):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
-    
+
         values = (user_ID, time.time(), message)
         cur.execute('INSERT INTO chat (user_ID, Timestamp, message) VALUES (?)', values)
         self.con.commit()
@@ -902,12 +896,19 @@ class Connection(object):
         
         
     def get_messages_all(self,):
+        '''
+        Function for getting all messages in the chat, ever.
+        Order the messages by timestamp.
+
+        :return: a list that contains messages as rows. Index 0 is message_id,
+                1 is user_id, 2 is timestamp, 3 is message
+        '''
     
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
         
-        cur.execute('SELECT * from chat')
+        cur.execute('SELECT * FROM chat ORDER BY timestamp ASC')
         
         all_chat_msg = cur.fetchall()
         cur.close()

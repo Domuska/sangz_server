@@ -30,6 +30,8 @@ FORUM_MESSAGE_PROFILE = "/profiles/message-profile"
 ATOM_THREAD_PROFILE = "https://tools.ietf.org/html/rfc4685"
 APIARY_PROFILES_URL = "STUDENT_APIARY_PROJECT/#reference/profiles/"
 
+
+
 # Define the application and the api
 # Copied from the exercise 3 source code
 app = Flask(__name__)
@@ -123,6 +125,11 @@ def get_playlist():
 # The classes are still skeletons, but these will be the resources and methods we will be implementing.
 # The skeletons are still missing their proper arguments, add them as you work.
 # The original methods from exercise 3 are removed, but take a look at them for help as you work.
+
+class Frontpage(Resource):
+
+    def get(self):
+        return Response ("you're at the front page of sangz service", 200, mimetype="text/html")
 
 class Users(Resource):
 
@@ -243,15 +250,21 @@ class Chat(Resource):
         collection['version'] = '1.0'
         collection['href'] = api.url_for(Chat)
         # todo: add links when other resources are added to the routes
+        collection['links'] = [
+            {'prompt': 'Go back to home page',
+             'rel': 'homepage',
+             'href': api.url_for(Frontpage)}
+        ]
 
         items = []
 
         chat_db = g.con.get_messages_all()
 
+        # go through the rows in the returned array to get details
         for message_row in chat_db:
             message = {}
-            # todo: handle if user_id is missing
             # todo: not really nice to just use mysterious array rows, figure out better way
+
             user_db = g.con.get_user(message_row[1])
 
             message['data'] = []
@@ -259,7 +272,12 @@ class Chat(Resource):
             value = {'name': 'message_body', 'value': message_row[3]}
             message['data'].append(value)
 
-            value = {'name': 'timestamp', 'value': message_row[2]}
+            timestamp = message_row[2]
+            if timestamp is None:
+                value = {'name': 'timestamp', 'value': ''}
+            else:
+                value = {'name': 'timestamp', 'value': message_row[2]}
+
             message['data'].append(value)
 
             value = {'name': 'user_name', 'value': user_db.get('username')}
@@ -285,6 +303,9 @@ app.url_map.converters['regex'] = RegexConverter
 
 #Define the routes
 
+api.add_resource(Frontpage, '/sangz/api/',
+                 endpoint='')
+
 api.add_resource(Playlist, '/sangz/api/playlist/',
                  endpoint='playlist')
 
@@ -296,23 +317,6 @@ api.add_resource(Songs, '/sangz/api/songs/',
 
 api.add_resource(Chat, '/sangz/api/chat',
                  endpoint='chat')
-
-'''
-api.add_resource(Messages, '/forum/api/messages/',
-                 endpoint='messages')
-api.add_resource(Message, '/forum/api/messages/<regex("msg-\d+"):messageid>/',
-                 endpoint='message')
-api.add_resource(User_public, '/forum/api/users/<nickname>/public_profile/',
-                 endpoint='public_profile')
-api.add_resource(User_restricted, '/forum/api/users/<nickname>/restricted_profile/',
-                 endpoint='restricted_profile')
-api.add_resource(Users, '/forum/api/users/',
-                 endpoint='users')
-api.add_resource(User, '/forum/api/users/<nickname>/',
-                 endpoint='user')
-api.add_resource(History, '/forum/api/users/<nickname>/history/',
-                 endpoint='history')
-'''
 
 #Redirect profile
 @app.route('/profiles/<profile_name>')

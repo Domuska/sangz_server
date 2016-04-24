@@ -179,6 +179,8 @@ class Playlist(Resource):
 
         Profile: Playlist profile
 
+        Link relations in items: song, artist
+
         Link relations: self, song, songs
 
         Response status codes
@@ -197,7 +199,7 @@ class Playlist(Resource):
         collection['href'] = api.url_for(Playlist)
         # todo: add the links when other resources are added to the routes
         collection['links'] = [{'prompt': 'see the full list of songs',
-                                'rel':'songs',
+                                'rel': 'songs',
                                 'href': api.url_for(Songs)}
                                ]
 
@@ -243,6 +245,24 @@ class Chat(Resource):
 
     def get(self):
 
+        '''
+        Function for getting the whole chat backlog
+
+        RESPONSE:
+
+        Media type: application/vnd.collection+json
+
+        Profile: Chat profile
+
+        Link relations in items: None
+
+
+        Link relations: self, front page
+
+        Response status codes
+        200 if all is okay
+
+        '''
         envelope = {}
         collection = {}
         envelope['collection'] = collection
@@ -253,13 +273,18 @@ class Chat(Resource):
         collection['links'] = [
             {'prompt': 'Go back to home page',
              'rel': 'homepage',
-             'href': api.url_for(Frontpage)}
+             'href': api.url_for(Frontpage)},
+
+            {'prompt': 'See the current playlist',
+             'rel': 'playlist',
+             'href': api.url_for(Playlist)},
         ]
 
         items = []
 
         chat_db = g.con.get_messages_all()
 
+        # add the messages
         # go through the rows in the returned array to get details
         for message_row in chat_db:
             message = {}
@@ -280,12 +305,25 @@ class Chat(Resource):
 
             message['data'].append(value)
 
-            value = {'name': 'user_name', 'value': user_db.get('username')}
+            value = {'name': 'sender', 'value': user_db.get('username')}
             message['data'].append(value)
 
             items.append(message)
 
         collection['items'] = items
+
+        # add the template
+        collection['template'] = {
+            'data': [
+                {'prompt': '', 'name': 'message_body',
+                 'value': '', 'required': True},
+
+                {'prompt': '', 'name': 'sender',
+                 'value': '', 'required': True},
+            ]
+        }
+
+
 
         string_data = json.dumps(envelope)
 

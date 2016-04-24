@@ -415,35 +415,53 @@ class Song(Resource):
                                          "There is no song with this ID"
                                         )
 
-    # todo: Pramod fix this
-    '''
-    def upvote(self, songid):
+class Votes(object):
+    def post(self, songid, userid):
         songs_db = g.con.get_songs(songid)
         if not songs_db:
             errormessage = create_error_response(404, "Resource not found", "No song found here!")
             return (errormessage)
+        if COLLECTIONJSON != request.headers.get('Content-Type', ''):
+            return create_error_response(415, "UnsupportedMediaType",
+                                         "Use a JSON compatible format")
+        request_body = request.get_json(force=True)
 
-        global votes_on_songs = {}
-        # read comments that using global keyword is a bad practice
-        # maybe we Mika/Ivan can help us later?
-        if songid in votes_on_songs:
-            votes_on_songs[songid] += 1
-        else:
-            votes_on_songs[songid] = 1
+        try:
+            data = request_body['template']['data']
+            _songid = None
+            _user = None
+            _time = int(time.time())
 
+            for d in data:
+                # This code has a bad performance. We write it like this for
+                # simplicity. Another alternative should be used instead.
+                if d['name'] == 'songid':
+                    _songid = d['value']
+                elif d['name'] == 'userid':
+                    _user = d['value']
 
-    def downvote(self, songid):
-        songs_db = g.con.get_songs(songid)
-        if not songs_db:
-            errormessage = create_error_response(404, "Resource not found", "No song found here!")
-            return (errormessage)
+            # CHECK THAT DATA RECEIVED IS CORRECT
+            if not _songid or not _user:
+                return create_error_response(400, "Wrong request format",
+                                             "Be sure you include message songid and userid")
+        except:
+            # This is launched if either title or body does not exist or if
+            # the template.data array does not exist.
+            return create_error_response(400, "Wrong request format",
+                                         "Be sure you include message title and body")
+        # Create the new message and build the response code'
+            newvoteid = g.con.add_vote(_songid, _user, _time)
+        if not newvoteid:
+            return create_error_response(500, "Problem with the database",
+                                         "Cannot access the database")
 
-        votes_on_songs = {}
-        if songid in votes_on_songs:
-            votes_on_songs[songid] -= 1
-        else:
-            votes_on_songs[songid] = 0
-    '''
+        # Create the Location header with the id of the message created
+        url = api.url_for(Votes, voteid=newvoteid)
+
+        # RENDER
+        # Return the response
+        return Response(status=201, headers={'Location': url})
+
 
 class Playlist(Resource):
 
@@ -651,19 +669,18 @@ app.url_map.converters['regex'] = RegexConverter
 #Define the routes
 api.add_resource(Users, '/sangz/api/users/',
                  endpoint='users')
-
 api.add_resource(Frontpage, '/sangz/api/',
                  endpoint='')
-
 api.add_resource(Playlist, '/sangz/api/playlist/',
                  endpoint='playlist')
-
 api.add_resource(Songs, '/sangz/api/songs/',
                  endpoint='songs')
 api.add_resource(Song, '/sangz/api/songs/<songid>/',
                  endpoint='song')
 api.add_resource(Chat, '/sangz/api/chat/',
                  endpoint='chat')
+api.add_resource(Votes, '/sangz/api/votes/',
+                 endpoint='vote')
 
 # won't be implemented
 # api.add_resource(Artists, '/sangz/api/artists/',

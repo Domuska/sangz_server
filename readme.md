@@ -1,4 +1,4 @@
-Authors: Tomi Lamsa, Kalle Lyttinen
+Authors: Tomi Lamsa, Kalle Lyttinen, Pramod Guruprasad
 
 No external libraries (besides sqlite3) were used.
 

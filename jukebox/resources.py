@@ -30,6 +30,8 @@ SANGZ_SONG_PROFILE = "/profiles/song-profile"
 ATOM_THREAD_PROFILE = "https://tools.ietf.org/html/rfc4685"
 APIARY_PROFILES_URL = "http://docs.pwpsangz.apiary.io/#reference/hypermedia-profiles"
 
+
+
 # Define the application and the api
 # Copied from the exercise 3 source code
 app = Flask(__name__)
@@ -123,6 +125,11 @@ def get_playlist():
 # The classes are still skeletons, but these will be the resources and methods we will be implementing.
 # The skeletons are still missing their proper arguments, add them as you work.
 # The original methods from exercise 3 are removed, but take a look at them for help as you work.
+
+class Frontpage(Resource):
+
+    def get(self):
+        return Response ("you're at the front page of sangz service", 200, mimetype="text/html")
 
 class Users(Resource):
 
@@ -297,8 +304,24 @@ class Song(Resource):
 class Playlist(Resource):
 
     def get(self):
+        '''
+        Get the playlist as it currently is on the server
 
-        # todo: add in documentation how this function works
+        RESPONSE:
+
+        Media type: application/vnd.collection+json
+
+        Profile: Playlist profile
+
+        Link relations in items: song, artist
+
+        Link relations: self, song, songs
+
+        Response status codes
+        200 if all is okay
+
+        '''
+
         playlist = get_playlist()
 
 
@@ -310,7 +333,7 @@ class Playlist(Resource):
         collection['href'] = api.url_for(Playlist)
         # todo: add the links when other resources are added to the routes
         collection['links'] = [{'prompt': 'see the full list of songs',
-                                'rel':'songs',
+                                'rel': 'songs',
                                 'href': api.url_for(Songs)}
                                ]
 
@@ -318,22 +341,27 @@ class Playlist(Resource):
 
 
         for key in playlist:
-
-
             song = { }
             song['href'] = api.url_for(Song, song_id=key)
 
+            # get an individual song's details using the key in playlist dictionary
             song_db = g.con.get_song(key)
 
+            # get the artist's id from song_db and use it to get the artist's info from db
             artist_db = g.con.get_artist(song_db.get('artist_ID', 'None'))
             vote_count = g.con.get_votes_by_song(key)
-
-            # todo: handle the case if there is no artist for the listed song
 
             song['data'] = []
             value = {'name': 'song_name', 'value': song_db.get('song_name')}
             song['data'].append(value)
-            value = {'name': 'artist_name', 'value': artist_db.get('artist_name')}
+
+            # no artist for this song
+            if artist_db is None:
+                value = {'name': 'artist_name', 'value': ''}
+
+            else:
+                value = {'name': 'artist_name', 'value': artist_db.get('artist_name')}
+
             song['data'].append(value)
             value = {'name': 'vote_count', 'value': vote_count.get('votes')}
             song['data'].append(value)
@@ -350,7 +378,92 @@ class Playlist(Resource):
 class Chat(Resource):
 
     def get(self):
-        abort(404)
+
+        '''
+        Function for getting the whole chat backlog
+
+        RESPONSE:
+
+        Media type: application/vnd.collection+json
+
+        Profile: Chat profile
+
+        Link relations in items: None
+
+
+        Link relations: self, front page
+
+        Response status codes
+        200 if all is okay
+
+        '''
+        envelope = {}
+        collection = {}
+        envelope['collection'] = collection
+
+        collection['version'] = '1.0'
+        collection['href'] = api.url_for(Chat)
+        # todo: add links when other resources are added to the routes
+        collection['links'] = [
+            {'prompt': 'Go back to home page',
+             'rel': 'homepage',
+             'href': api.url_for(Frontpage)},
+
+            {'prompt': 'See the current playlist',
+             'rel': 'playlist',
+             'href': api.url_for(Playlist)},
+        ]
+
+        items = []
+
+        chat_db = g.con.get_messages_all()
+
+        # add the messages
+        # go through the rows in the returned array to get details
+        for message_row in chat_db:
+            message = {}
+            # todo: not really nice to just use mysterious array rows, figure out better way
+
+            user_db = g.con.get_user(message_row[1])
+
+            message['data'] = []
+
+            value = {'name': 'message_body', 'value': message_row[3]}
+            message['data'].append(value)
+
+            timestamp = message_row[2]
+            if timestamp is None:
+                value = {'name': 'timestamp', 'value': ''}
+            else:
+                value = {'name': 'timestamp', 'value': message_row[2]}
+
+            message['data'].append(value)
+
+            value = {'name': 'sender', 'value': user_db.get('username')}
+            message['data'].append(value)
+
+            items.append(message)
+
+        collection['items'] = items
+
+        # add the template
+        collection['template'] = {
+            'data': [
+                {'prompt': '', 'name': 'message_body',
+                 'value': '', 'required': True},
+
+                {'prompt': '', 'name': 'sender',
+                 'value': '', 'required': True},
+            ]
+        }
+
+
+
+        string_data = json.dumps(envelope)
+
+        return Response(string_data, 200, mimetype="application/vnd.collection+json")
+
+
     def post(self):
         abort(404)
 
@@ -362,6 +475,9 @@ app.url_map.converters['regex'] = RegexConverter
 
 #Define the routes
 api.add_resource(Users, '/sangz/api/users/',
+
+api.add_resource(Frontpage, '/sangz/api/',
+                 endpoint='')
 
 api.add_resource(Playlist, '/sangz/api/playlist/',
                  endpoint='playlist')

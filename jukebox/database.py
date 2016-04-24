@@ -779,15 +779,41 @@ class Connection(object):
         self.set_foreign_keys_support()
         
         values = (song_ID,)
-        cur.execute('SELECT count(*) FROM votes WHERE song_ID = ?', values)
-        self.con.commit()
-        
+        cur.execute('SELECT count(*) FROM votes WHERE song_id = ?', values)
+
+        row = cur.fetchone()
+
         if row is None:
             print 'song_ID not found'
             return None
 
-        return cur.fetchone()
-        
+        song_votes = {'votes': row[0]}
+
+        return song_votes
+
+    def get_all_songs_votes(self):
+
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+
+        # get all song_ids that have a single vote (or in other words a row in votes table)
+        statement = "SELECT DISTINCT song_id FROM votes"
+        cur.execute(statement, )
+
+        playlist = { }
+
+        for row in cur:
+
+            #default_data['item3'] = 3
+            playlist[str(row[0])] = self.get_votes_by_song(row[0])
+
+        return playlist
+
+        # poll get_votes_by_song with the ids gotten into the cursor
+        # marry the id-vote_count into a dictionary
+        # return the dictionary
+
     def delete_votes_by_user(self, user_ID):
     
         self.con.row_factory = sqlite3.Row
@@ -799,7 +825,6 @@ class Connection(object):
         if cur.rowcount < 1:
             return False
         return True
-
 
     def delete_votes_by_song(self, song_ID):
     
@@ -818,14 +843,15 @@ class Connection(object):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
-        
-        values = (song_ID)
-        cur.execute('DELETE from votes', )
+
+        cur.execute('DELETE * from votes', )
         if cur.rowcount < 1:
             return False
         return True
         
         self.con.commit()
+
+
         
         #CHAT TABLE BEGINS HERE ----------------------------------------------
     

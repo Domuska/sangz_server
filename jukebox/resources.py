@@ -19,12 +19,15 @@ from werkzeug.exceptions import NotFound,  UnsupportedMediaType
 
 from utils import RegexConverter
 import database
+import time
+from datetime import datetime
 
 # todo: edit these to actually present things in our project
 # Constants for hypermedia formats and profiles
 # Copied from the exercise 3 source code
-COLLECTIONJSON = "application/vnd.collection+json"
-HAL = "application/hal+json"
+MIME_TYPE_COLLECTION_JSON = "application/vnd.collection+json"
+MIME_TYPE_APPLICATION_JSON = "application/json"
+MIME_TYPE_HAL = "application/hal+json"
 FORUM_USER_PROFILE ="/profiles/user-profile"
 FORUM_MESSAGE_PROFILE = "/profiles/message-profile"
 ATOM_THREAD_PROFILE = "https://tools.ietf.org/html/rfc4685"
@@ -85,7 +88,7 @@ def resource_request_malformed(error):
 @app.errorhandler(500)
 def unknown_error(error):
     return create_error_response(500, "Error",
-                    "The system has failed. Please, contact the administrator")
+                                 "The system has failed. Please, contact the administrator")
 
 # Copied from the exercise 3 source code
 @app.before_request
@@ -109,13 +112,12 @@ def close_connection(exc):
         g.con.close()
 
 
-# get the playlist, for now it just returns a dummy playlist
 # todo: implement the real playlist stuff somehow
 def get_playlist():
     '''
-        Function for getting the currently playing playlist
-        :return: A dictionary that has song_id: vote count as key-value pairs
-        '''
+    Function for getting the currently playing playlist
+    :return: A dictionary that has song_id: vote count as key-value pairs
+    '''
 
     return g.con.get_all_songs_votes()
 
@@ -129,7 +131,7 @@ def get_playlist():
 class Frontpage(Resource):
 
     def get(self):
-        return Response ("you're at the front page of sangz service", 200, mimetype="text/html")
+        return Response("you're at the front page of sangz service", 200, mimetype="text/html")
 
 class Users(Resource):
 
@@ -256,7 +258,6 @@ class Chat(Resource):
 
         Link relations in items: None
 
-
         Link relations: self, front page
 
         Response status codes
@@ -323,15 +324,47 @@ class Chat(Resource):
             ]
         }
 
-
-
         string_data = json.dumps(envelope)
 
         return Response(string_data, 200, mimetype="application/vnd.collection+json")
 
-
     def post(self):
-        abort(404)
+
+        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
+            return create_error_response(415, UnsupportedMediaType,
+                                         'Use JSON format in the request and use a proper header')
+
+        # BadRequest exception will be thrown if JSON is not valid
+        request_json = request.get_json(force=True)
+
+        # todo: not good idea to have client send user_id, look at authentication and figure out a better way
+
+        sender_id = None
+        message_body = None
+
+        try:
+            data = request_json['template']['data']
+
+            entries = []
+
+            # maybe not the best way to do this, but get the name and body
+            # from the data array
+            sender_id = data[0]['value']
+            message_body = data[1]['value']
+
+            if sender_id is None or message_body is None:
+                return create_error_response(400, 'Wrong request format',
+                                             'Please include sender_id and message_body.')
+        except:
+            return create_error_response(400, "Wrong request format",
+                                         "Please use the correct template a")
+
+        string_data = "you sent id: " + sender_id + ", message: " + message_body
+
+        g.con.add_message(sender_id, message_body, time.time())
+
+        return Response(string_data, 201, mimetype="text/html")
+
 
 
 #Add the Regex Converter so we can use regex expressions when we define the

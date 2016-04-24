@@ -4,7 +4,7 @@
  in the excercises.
 '''
 
-from datetime import datetime
+
 import time, sqlite3, re, os
 #Default paths for .db and .sql files to create and populate the database.
 DEFAULT_DB_PATH = 'db/data.db'
@@ -629,12 +629,12 @@ class Connection(object):
             return False
         return cur.lastrowid
         
-    def get_artist(self, artist_ID):
+    def get_artist(self, artist_id):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
     
-        values = (artist_ID,)
+        values = (artist_id,)
         cur.execute('SELECT * FROM artists WHERE artist_id = ?', values)
         
         row = cur.fetchone()
@@ -681,7 +681,7 @@ class Connection(object):
         cur = self.con.cursor()
         self.set_foreign_keys_support()
     
-        values = (album_name,)
+        values = (artist_name,)
         cur.execute('INSERT INTO albums (album_name) VALUES (?)', values)
         self.con.commit()
         
@@ -689,12 +689,12 @@ class Connection(object):
             return False
         return cur.lastrowid
         
-    def get_album(self, album_ID):
+    def get_album(self, album_id):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
     
-        values = (artist_ID,)
+        values = (album_id,)
         cur.execute('SELECT * FROM albums WHERE album_id = ?', values)
         
         row = cur.fetchone()
@@ -708,13 +708,13 @@ class Connection(object):
         
         return album_info
         
-    def delete_album(self, album_ID):
+    def delete_album(self, album_id):
     
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
         
-        values = (artist_ID,)
+        values = (album_id,)
         cur.execute('DELETE FROM albums WHERE album_id = ?', values)
         self.con.commit()
         
@@ -735,13 +735,13 @@ class Connection(object):
 
         #VOTES TABLE BEGINS HERE ----------------------------------------------
     
-    def add_votes(self, song_ID, user_ID):
+    def add_votes(self, song_ID, user_id, time):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
     
-        values = (song_ID,user_id, time.time())
-        cur.execute('INSERT INTO votes (song_ID,user_ID, Timestamp) VALUES (?,?,?)', values)
+        values = (song_ID, user_id, time)
+        cur.execute('INSERT INTO votes (song_ID,user_ID, timestamp) VALUES (?,?,?)', values)
         self.con.commit()
         
         if cur.rowcount < 1:
@@ -849,13 +849,13 @@ class Connection(object):
         
         #CHAT TABLE BEGINS HERE ----------------------------------------------
     
-    def add_message(self, user_ID, message):
+    def add_message(self, user_id, message, time):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
 
-        values = (user_ID, time.time(), message)
-        cur.execute('INSERT INTO chat (user_ID, Timestamp, message) VALUES (?)', values)
+        values = (user_id, time, message)
+        cur.execute('INSERT INTO chat (user_ID, Timestamp, message) VALUES (?,?,?)', values)
         self.con.commit()
         
         if cur.rowcount < 1:

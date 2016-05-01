@@ -17,7 +17,6 @@ from flask import Flask, request, Response, g, jsonify, _request_ctx_stack, redi
 from flask.ext.restful import Resource, Api, abort
 from werkzeug.exceptions import NotFound,  UnsupportedMediaType
 
-from utils import RegexConverter
 import database
 import time
 from datetime import datetime
@@ -415,13 +414,14 @@ class Song(Resource):
                                          "There is no song with this ID"
                                         )
 
-class Votes(object):
+class Votes(Resource):
+
     def post(self, songid, userid):
         songs_db = g.con.get_songs(songid)
         if not songs_db:
             errormessage = create_error_response(404, "Resource not found", "No song found here!")
             return (errormessage)
-        if COLLECTIONJSON != request.headers.get('Content-Type', ''):
+        if MIME_TYPE_COLLECTION_JSON != request.headers.get('Content-Type', ''):
             return create_error_response(415, "UnsupportedMediaType",
                                          "Use a JSON compatible format")
         request_body = request.get_json(force=True)
@@ -660,10 +660,6 @@ class Chat(Resource):
         return Response(string_data, 201, mimetype="text/html")
 
 
-
-#Add the Regex Converter so we can use regex expressions when we define the
-#routes
-app.url_map.converters['regex'] = RegexConverter
 
 
 #Define the routes

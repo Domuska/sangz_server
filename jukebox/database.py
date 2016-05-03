@@ -383,7 +383,7 @@ class Connection(object):
         if upperlimit is None:
             upperlimit = -1
 
-        statement = 'SELECT user_ID FROM users LIMIT ? OFFSET ?'
+        statement = 'SELECT user_ID, username FROM users LIMIT ? OFFSET ?'
         values = (upperlimit, offset)
         cur.execute(statement, values)
             

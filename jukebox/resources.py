@@ -16,7 +16,11 @@ import json
 from flask import Flask, request, Response, g, jsonify, _request_ctx_stack, redirect
 from flask.ext.restful import Resource, Api, abort
 from werkzeug.exceptions import NotFound,  UnsupportedMediaType
+from collection_json import Collection
+from collection_json import Item
+from collection_json import Data
 
+import unicodedata
 import database
 import time
 from datetime import datetime
@@ -139,7 +143,24 @@ class Frontpage(Resource):
 class Users(Resource):
 
     def get(self):
-        abort(404)
+        #get users from database
+        users = g.con.get_users()
+        template = {
+            "data": [
+                {'name': 'nickname', 'value': '', 'prompt': ''}
+            ]
+        }
+        collection = Collection(api.url_for(Users), template = template)
+        collection.version = "1.0"
+        for user in users:
+            print user
+            item = Item(api.url_for(User, userid = user[0]))
+            item.data.append(Data("Id", user[0]))
+            item.data.append(Data("nickname", user[1]))
+            collection.items.append(item)
+
+        string_data = str(collection)
+        return Response(string_data, 200, mimetype="application/vnd.collection+json")
 
     def post (self):
         abort(404)
@@ -665,6 +686,8 @@ class Chat(Resource):
 #Define the routes
 api.add_resource(Users, '/sangz/api/users/',
                  endpoint='users')
+api.add_resource(User, '/sangz/api/users/<userid>',
+                 endpoint = 'user')
 api.add_resource(Frontpage, '/sangz/api/',
                  endpoint='')
 api.add_resource(Playlist, '/sangz/api/playlist/',

@@ -1,6 +1,10 @@
 Authors: Tomi Lamsa, Kalle Lyttinen, Pramod Guruprasad
 
-No external libraries (besides sqlite3, flask and flask.restful) were used.
+The following python modules are required:
+    sqlite3
+    flask
+    flask.restful
+    collection-json
 
 When you clone the repository, the database should already be populated.
 In the root of sangz server, and run: python -m jukebox.resources.

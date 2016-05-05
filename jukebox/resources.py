@@ -40,7 +40,8 @@ SANGZ_SONG_PROFILE = "/profiles/song-profile"
 ATOM_THREAD_PROFILE = "https://tools.ietf.org/html/rfc4685"
 APIARY_PROFILES_URL = "http://docs.pwpsangz.apiary.io/#reference/hypermedia-profiles"
 
-
+VOTES_TYPE_UPVOTE = 'upvote'
+VOTES_TYPE_DOWNVOTE = 'downvote'
 
 # Define the application and the api
 # Copied from the exercise 3 source code
@@ -435,53 +436,47 @@ class Song(Resource):
                                          "There is no song with this ID"
                                         )
 
+
 class Votes(Resource):
 
-    def post(self, songid, userid):
-        songs_db = g.con.get_songs(songid)
-        if not songs_db:
-            errormessage = create_error_response(404, "Resource not found", "No song found here!")
-            return (errormessage)
-        if MIME_TYPE_COLLECTION_JSON != request.headers.get('Content-Type', ''):
-            return create_error_response(415, "UnsupportedMediaType",
-                                         "Use a JSON compatible format")
+    def post(self):
+
+        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
+            return create_error_response(415, UnsupportedMediaType,
+                                         'Use JSON format in the request and use a proper header')
+
+        # BadRequest exception (401) will be thrown if JSON is not valid
         request_body = request.get_json(force=True)
 
-        try:
-            data = request_body['template']['data']
-            _songid = None
-            _user = None
-            _time = int(time.time())
 
-            for d in data:
-                # This code has a bad performance. We write it like this for
-                # simplicity. Another alternative should be used instead.
-                if d['name'] == 'songid':
-                    _songid = d['value']
-                elif d['name'] == 'userid':
-                    _user = d['value']
+        # try:
+        type = request_body['type']
+        uploader_id = request_body['voter_id']
+        song_id = request_body['song_id']
 
-            # CHECK THAT DATA RECEIVED IS CORRECT
-            if not _songid or not _user:
-                return create_error_response(400, "Wrong request format",
-                                             "Be sure you include message songid and userid")
-        except:
-            # This is launched if either title or body does not exist or if
-            # the template.data array does not exist.
-            return create_error_response(400, "Wrong request format",
-                                         "Be sure you include message title and body")
-        # Create the new message and build the response code'
-            newvoteid = g.con.add_vote(_songid, _user, _time)
-        if not newvoteid:
-            return create_error_response(500, "Problem with the database",
-                                         "Cannot access the database")
+        songs_db = g.con.get_songs(song_id)
+        if not songs_db:
+            error_message = create_error_response(404, "Resource not found", "No song found here!")
+            return error_message
 
-        # Create the Location header with the id of the message created
-        url = api.url_for(Votes, voteid=newvoteid)
 
-        # RENDER
-        # Return the response
-        return Response(status=201, headers={'Location': url})
+        if VOTES_TYPE_UPVOTE == type:
+            g.con.add_upvotes(song_id, uploader_id, int(time.time()))
+            return Response(201)
+        elif VOTES_TYPE_DOWNVOTE == type:
+            g.con.add_downvotes(song_id, uploader_id, int(time.time()))
+            return Response(201)
+
+        else:
+            return create_error_response(404, "Resource not found",
+                                         "Be sure you include attribute 'type' and use"
+                                         " either code 'upvote' or 'downvote'")
+        #
+        # except:
+        #     return create_error_response(400, "Wrong request format",
+        #                                  "Be sure you include voter_id, song_id and type")
+
+
 
 
 class Playlist(Resource):
@@ -532,7 +527,11 @@ class Playlist(Resource):
 
             # get the artist's id from song_db and use it to get the artist's info from db
             artist_db = g.con.get_artist(song_db.get('artist_ID', 'None'))
-            vote_count = g.con.get_votes_by_song(key)
+
+            upvote_count = g.con.get_upvotes_by_song(key)
+            downvote_count = g.con.get_downvotes_by_song(key)
+            final_vote_count = upvote_count.get('votes') - downvote_count.get('votes')
+
 
             song['data'] = []
             value = {'name': 'song_name', 'value': song_db.get('song_name')}
@@ -546,7 +545,7 @@ class Playlist(Resource):
                 value = {'name': 'artist_name', 'value': artist_db.get('artist_name')}
 
             song['data'].append(value)
-            value = {'name': 'vote_count', 'value': vote_count.get('votes')}
+            value = {'name': 'vote_count', 'value': final_vote_count}
             song['data'].append(value)
 
             items.append(song)
@@ -699,7 +698,8 @@ api.add_resource(Song, '/sangz/api/songs/<songid>/',
 api.add_resource(Chat, '/sangz/api/chat/',
                  endpoint='chat')
 api.add_resource(Votes, '/sangz/api/votes/',
-                 endpoint='vote')
+                 endpoint='votes')
+
 
 # won't be implemented
 # api.add_resource(Artists, '/sangz/api/artists/',

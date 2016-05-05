@@ -45,6 +45,7 @@ CREATE TABLE if NOT EXISTS votes(
 	song_id INTEGER NOT NULL,
 	user_id INTEGER,
 	timestamp INTEGER,
+	vote_type TEXT NOT NULL,
 	FOREIGN KEY (song_id) REFERENCES songs(song_id),
 	FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
@@ -56,6 +57,8 @@ CREATE TABLE if NOT EXISTS chat(
 	message TEXT,
 	FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+
 
 COMMIT;
 PRAGMA foreign_keys=ON;

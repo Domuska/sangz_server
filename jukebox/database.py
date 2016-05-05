@@ -735,15 +735,29 @@ class Connection(object):
 
         #VOTES TABLE BEGINS HERE ----------------------------------------------
     
-    def add_votes(self, song_ID, user_id, time):
+    def add_upvotes(self, song_ID, user_id, time):
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
     
-        values = (song_ID, user_id, time)
-        cur.execute('INSERT INTO votes (song_ID,user_ID, timestamp) VALUES (?,?,?)', values)
+        values = (song_ID, user_id, time, 'upvote')
+
+        cur.execute('INSERT INTO votes (song_ID,user_ID, timestamp, vote_type) VALUES (?,?,?,?)', values)
         self.con.commit()
         
+        if cur.rowcount < 1:
+            return False
+        return cur.lastrowid
+
+    def add_downvotes(self, song_ID, user_id, time):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+
+        values = (song_ID, user_id, time, 'downvote')
+        cur.execute('INSERT INTO votes (song_ID,user_ID, timestamp, vote_type) VALUES (?,?,?,?)', values)
+        self.con.commit()
+
         if cur.rowcount < 1:
             return False
         return cur.lastrowid
@@ -772,14 +786,33 @@ class Connection(object):
         
         return song_info
         
-    def get_votes_by_song(self, song_ID):
+    def get_upvotes_by_song(self, song_ID):
     
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
         
         values = (song_ID,)
-        cur.execute('SELECT count(*) FROM votes WHERE song_id = ?', values)
+        cur.execute('SELECT count(*) FROM votes WHERE song_id = ? AND vote_type = "upvote"', values)
+
+        row = cur.fetchone()
+
+        if row is None:
+            print 'song_ID not found'
+            return None
+
+        song_votes = {'votes': row[0]}
+
+        return song_votes
+
+    def get_downvotes_by_song(self, song_ID):
+
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+
+        values = (song_ID,)
+        cur.execute('SELECT count(*) FROM votes WHERE song_id = ? AND vote_type = "downvote"', values)
 
         row = cur.fetchone()
 
@@ -804,7 +837,7 @@ class Connection(object):
         playlist = { }
 
         for row in cur:
-            playlist[str(row[0])] = self.get_votes_by_song(row[0])
+            playlist[str(row[0])] = self.get_upvotes_by_song(row[0])
 
         return playlist
 

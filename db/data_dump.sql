@@ -19,9 +19,9 @@ INSERT INTO "songs" VALUES(1,"Piiskaa prkl","/home/paviaani/media/mp3","mp3",3,1
 INSERT INTO "songs" VALUES(2,"Heartbrake hostel","/home/paviaani/media/mp3","mp3",4,NULL,3);
 INSERT INTO "songs" VALUES(3,"One","/home/paviaani/media/mp3","mp3",2,2,1);
 INSERT INTO "songs" VALUES(4,"testsong","testdir","mp3",2,2,1);
-INSERT INTO "votes" VALUES(1,1,1,1456752443);
-INSERT INTO "votes" VALUES(2,1,2,1456752444);
-INSERT INTO "votes" VALUES(3,1,3,1456752445);
+INSERT INTO "votes" VALUES(1,1,1,1456752443, "upvote");
+INSERT INTO "votes" VALUES(2,1,2,1456752444, "upvote");
+INSERT INTO "votes" VALUES(3,1,3,1456752445, "upvote");
 INSERT INTO "chat" values(1,1,1456752439,"must spank this shit! now!");
 INSERT INTO "chat" values(2,2,1456752440,"True dat! commence voting!11");
 INSERT INTO "chat" values(3,3,1456752442,"wannabe mR Van halen ffs");

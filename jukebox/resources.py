@@ -441,6 +441,23 @@ class Votes(Resource):
 
     def post(self):
 
+        '''
+        Post a new up vote for a particular song
+
+        Media type supported: application/JSON
+        Fields required:
+        'type': 'upvote' or 'downvote
+        'uploader_id': ID of the user casting a vote
+        'song_id': song on which the up- or downvote is cast on
+
+        Response status codes
+        201 if a new vote is added
+        400 if the sent message does not include all required fields
+        404 if the supplied song_id is faulty
+        415 if the wrong format for POST is used
+        '''
+
+
         if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
             return create_error_response(415, UnsupportedMediaType,
                                          'Use JSON format in the request and use a proper header')
@@ -449,32 +466,32 @@ class Votes(Resource):
         request_body = request.get_json(force=True)
 
 
-        # try:
-        type = request_body['type']
-        uploader_id = request_body['voter_id']
-        song_id = request_body['song_id']
+        try:
+            type = request_body['type']
+            uploader_id = request_body['voter_id']
+            song_id = request_body['song_id']
 
-        songs_db = g.con.get_songs(song_id)
-        if not songs_db:
-            error_message = create_error_response(404, "Resource not found", "No song found here!")
-            return error_message
+            songs_db = g.con.get_songs(song_id)
+            if not songs_db:
+                error_message = create_error_response(404, "Resource not found", "No song found here!")
+                return error_message
 
 
-        if VOTES_TYPE_UPVOTE == type:
-            g.con.add_upvotes(song_id, uploader_id, int(time.time()))
-            return Response(201)
-        elif VOTES_TYPE_DOWNVOTE == type:
-            g.con.add_downvotes(song_id, uploader_id, int(time.time()))
-            return Response(201)
+            if VOTES_TYPE_UPVOTE == type:
+                g.con.add_upvotes(song_id, uploader_id, int(time.time()))
+                return Response(201)
+            elif VOTES_TYPE_DOWNVOTE == type:
+                g.con.add_downvotes(song_id, uploader_id, int(time.time()))
+                return Response(201)
 
-        else:
-            return create_error_response(404, "Resource not found",
-                                         "Be sure you include attribute 'type' and use"
-                                         " either code 'upvote' or 'downvote'")
-        #
-        # except:
-        #     return create_error_response(400, "Wrong request format",
-        #                                  "Be sure you include voter_id, song_id and type")
+            else:
+                return create_error_response(404, "Resource not found",
+                                             "Be sure you include attribute 'type' and use"
+                                             " either code 'upvote' or 'downvote'")
+
+        except:
+            return create_error_response(400, "Wrong request format",
+                                         "Be sure you include voter_id, song_id and type")
 
 
 

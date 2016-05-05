@@ -787,7 +787,14 @@ class Connection(object):
         return song_info
         
     def get_upvotes_by_song(self, song_ID):
-    
+
+        '''
+        Method for getting all upvotes the song has received
+
+        :param song_ID: ID of the song
+        :return: a dictionary with 'votes' entry, which has the vote count
+        '''
+
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         self.set_foreign_keys_support()
@@ -806,6 +813,13 @@ class Connection(object):
         return song_votes
 
     def get_downvotes_by_song(self, song_ID):
+
+        '''
+        Method for getting all downvotes the song has received
+
+        :param song_ID: ID of the song
+        :return: a dictionary with 'votes' entry, which has the vote count
+        '''
 
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()

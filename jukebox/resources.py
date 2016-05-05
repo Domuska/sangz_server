@@ -454,7 +454,7 @@ class Votes(Resource):
         201 if a new vote is added
         400 if the sent message does not include all required fields
         404 if the supplied song_id is faulty
-        415 if the wrong format for POST is used
+        415 if the wrong content type is used
         '''
 
 
@@ -660,6 +660,20 @@ class Chat(Resource):
         return Response(string_data, 200, mimetype="application/vnd.collection+json")
 
     def post(self):
+
+        '''
+        Post a new message to the chat
+
+        Media type supported: application/JSON
+        Fields required:
+        'sender_id': ID of the sender
+        'message_body': body of the message
+
+        Response status codes
+        201 if a new message is added
+        400 if the sent message does not include all required fields
+        415 if the wrong content type is used
+        '''
 
         if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
             return create_error_response(415, UnsupportedMediaType,

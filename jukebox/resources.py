@@ -199,14 +199,6 @@ class Users(Resource):
         g.con.add_user(username, real_name, email, 0)
         return Response(string_data, 201, mimetype="text/html")
 
-class User(Resource):
-    def get(self):
-        abort(404)
-
-    def post(self):
-        abort(404)
-
-
 class Songs(Resource):
     '''
     Resource Songs implementation
@@ -747,8 +739,6 @@ class Chat(Resource):
 #Define the routes
 api.add_resource(Users, '/sangz/api/users/',
                  endpoint='users')
-api.add_resource(User, '/sangz/api/users/<userid>',
-                 endpoint = 'user')
 api.add_resource(Frontpage, '/sangz/api/',
                  endpoint='')
 api.add_resource(Playlist, '/sangz/api/playlist/',
@@ -766,6 +756,8 @@ api.add_resource(Votes, '/sangz/api/votes/',
 # won't be implemented
 # api.add_resource(Artists, '/sangz/api/artists/',
 #                  endpoint='artists')
+#api.add_resource(User, '/sangz/api/users/<userid>',
+#                 endpoint = 'user')
 # api.add_resource(Artist, '/sangz/api/artists/<artistid>/',
 #                  endpoint='artist')
 # api.add_resource(Albums, '/sangz/api/albums/',

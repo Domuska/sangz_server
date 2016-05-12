@@ -167,24 +167,13 @@ class Users(Resource):
         if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
             return create_error_response(415, UnsupportedMediaType,
                                          'Use JSON format in the request and use a proper header')
-
-        # BadRequest exception will be thrown if JSON is not valid
-        request_json = request.get_json(force=True)
-        # todo: not good idea to have client send user_id, look at authentication and figure out a better way
-
-        '''
-        {
-          "Username": "BillyJoe",
-          "Real_Name": "Johanne",
-          "Email": "johanne@email.com"
-        }
-        '''
-
         username = None
         real_name = None
         email = None
+        # BadRequest exception will be thrown if JSON is not valid
 
         try:
+            request_json = request.get_json(force=True)
             template = request_json['template']
             data = template['data']
             for d in data:
@@ -209,9 +198,6 @@ class Users(Resource):
 
         g.con.add_user(username, real_name, email, 0)
         return Response(string_data, 201, mimetype="text/html")
-
-
-
 
 class User(Resource):
     def get(self):

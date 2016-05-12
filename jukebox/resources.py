@@ -164,7 +164,53 @@ class Users(Resource):
         return Response(string_data, 200, mimetype="application/vnd.collection+json")
 
     def post (self):
-        abort(404)
+        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
+            return create_error_response(415, UnsupportedMediaType,
+                                         'Use JSON format in the request and use a proper header')
+
+        # BadRequest exception will be thrown if JSON is not valid
+        request_json = request.get_json(force=True)
+        # todo: not good idea to have client send user_id, look at authentication and figure out a better way
+
+        '''
+        {
+          "Username": "BillyJoe",
+          "Real_Name": "Johanne",
+          "Email": "johanne@email.com"
+        }
+        '''
+
+        username = None
+        real_name = None
+        email = None
+
+        try:
+            template = request_json['template']
+            data = template['data']
+            for d in data:
+                if d['name'] == 'Username' and username is None:
+                    username = d['value']
+                elif d['name'] == 'Real_Name' and real_name is None:
+                    real_name = d['value']
+                elif d['name'] == 'Email' and email is None:
+                    email = d['value']
+
+            if username is None or real_name is None or email is None:
+                raise KeyError
+
+        except:
+            return create_error_response(400, "Wrong request format",
+                                         "Please use the correct template a")
+
+        string_data = "you sent Username: " + str(username) + ", Real_Name: " + str(real_name) + " Email " + str(email)
+
+        # At this point it is clear that message was formed correctly
+        # Todo: should this check if username already exists?
+
+        g.con.add_user(username, real_name, email, 0)
+        return Response(string_data, 201, mimetype="text/html")
+
+
 
 
 class User(Resource):
@@ -295,8 +341,7 @@ class Songs(Resource):
         #Create the new message and build the response code'
         newsongid = g.con.create_song(song_name, media_location, media_type, artist_id, album_id, user_id)
         if not newsongid:
-            return create_error_response(500, "Problem with the database",
-                                         "Cannot access the database")
+            return create_error_response(500, "Cannot access the database")
 
         #Create the Location header with the id of the message created
         url = api.url_for(Songs, songid=newsongid)

@@ -199,12 +199,64 @@ class Users(Resource):
         g.con.add_user(username, real_name, email, 0)
         return Response(string_data, 201, mimetype="text/html")
 
-class User(Resource):
-    def get(self):
-        abort(404)
 
-    def post(self):
-        abort(404)
+class User(Resource):
+    def get(self, userid):
+        user = g.con.get_user(userid)
+
+        if user is None:
+            abort(404)
+
+        response = {}
+        try:
+            url = api.url_for(User, userid=userid)
+            print url
+            links= {"self": {"href": url}}
+            response['_links'] = links
+
+            response['id'] = userid
+            response['username'] = user['username']
+            response['realname'] = user['realname']
+            response['email'] = user['email']
+
+        except KeyError:
+            abort(500)
+
+        string_data = json.dumps(response)
+        return Response(string_data, 200, mimetype=MIME_TYPE_HAL + ";" + SANGZ_USER_PROFILE)
+
+    def put(self, userid):
+        user = g.con.get_user(userid)
+        if user is None:
+            abort(404)
+
+        request_json = request.get_json(force=True)
+
+        new_realname = None
+        new_username = None
+        new_email = None
+        try:
+            new_realname = request_json['realname']
+        except KeyError:
+            pass
+        try:
+            new_username = request_json['username']
+        except KeyError:
+            pass
+        try:
+            new_email = request_json['email']
+        except KeyError:
+            pass
+
+        g.con.modify_user(userid, new_username, new_realname, new_email)
+
+        return User.get(self , userid)
+
+    def delete(self, userid):
+        # Todo: some authentication?
+        if g.con.delete_user(userid):
+            return Response(status=200)
+        return Response(status=404)
 
 
 class Songs(Resource):
@@ -772,7 +824,6 @@ api.add_resource(Votes, '/sangz/api/votes/',
 #                  endpoint='albums')
 # api.add_resource(Album, '/sangz/api/albums/<albumid>',
 #                  endpoint='albums')
-
 
 #Redirect profile
 @app.route('/profiles/<profile_name>')

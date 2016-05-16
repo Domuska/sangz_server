@@ -260,51 +260,30 @@ class User(Resource):
 
 
 class Songs(Resource):
-    '''
-    Resource Songs implementation
-    '''
     def get(self):
-        '''
-        get all songs in the system
-
-        Input: nil
-        '''
-
         #connect to the db
         songs_db = g.con.get_songs()
-
-        #create envelope
-        envelope = {}
-        collection = {}
-        envelope["collection"] = collection
-        collection['version'] = "1.0"
-        collection['href'] = api.url_for(Songs)
-        #activate when Users are added
-        '''
-        collection['links'] = [
-                                {'prompt':'List of users in the app',
-                                'rel':'users','href':api.url_for(Users)
-                                }]
-        '''
-        collection['template'] = {
-        "data": [
+        template = {
+            "data": [
             {"prompt": "", "name":"song_name",
-             "value":"", "required":True},
+             "value":""},
              {"prompt": "", "name":"media_location",
-             "value":"", "required":True},
+             "value":""},
              {"prompt": "", "name":"media_type",
-             "value":"", "required":True},
+             "value":""},
              {"prompt": "", "name":"artist_id",
-             "value":"", "required":False},
+             "value":""},
              {"prompt": "", "name":"album_id",
-             "value":"", "required":False},
+             "value":""},
              {"prompt": "", "name":"user_id",
-             "value":"", "required":False}
+             "value":""}
             ]
         }
-        
+        collection = Collection(api.url_for(Songs), template = template)
+        collection.version = "1.0"
         #create items
         items = []
+        print songs_db
         for song in songs_db:
             _songid = song['songid']
             _songname = song['song_name']
@@ -329,7 +308,11 @@ class Songs(Resource):
             song['links'] = []
             items.append(song)
         collection['items'] = items
-
+        
+        #create envelope
+        
+        envelope = {}
+        envelope["collection"] = collection
         string_data = json.dumps(envelope)
 
         return Response(string_data, 200, mimetype="application/vnd.collection+json;/profiles/songs-profile")

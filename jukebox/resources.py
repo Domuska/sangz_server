@@ -654,7 +654,9 @@ class Playlist(Resource):
 
         string_data = json.dumps(envelope)
 
-        return Response(string_data, 200, mimetype="application/vnd.collection+json")
+        return Response(string_data, 200, 
+		mimetype="application/vnd.collection+json",
+		headers={'Access-Control-Allow-Origin': '*'})
 
 
 class Chat(Resource):

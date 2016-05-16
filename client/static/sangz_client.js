@@ -63,7 +63,7 @@ DEFAULT_DATATYPE = "json",
  * @constant {string}
  * @default 
  */
-ENTRYPOINT = "/forum/api/users/"; //Entrypoint: Resource Users
+ENTRYPOINT = "http://localhost:5000/sangz/api/playlist/"
 
 /**** END CONSTANTS****/
 
@@ -71,6 +71,56 @@ ENTRYPOINT = "/forum/api/users/"; //Entrypoint: Resource Users
 /**** START RESTFUL CLIENT****/
 
 //our stuff goes here
+
+function getPlaylist(apiurl){
+	
+	console.log("hello world!");
+	
+	
+	apiurl = apiurl || ENTRYPOINT2;
+	
+	return $.ajax({
+		
+		url: apiurl,
+		datatype:DEFAULT_DATATYPE
+	}).always(function(){
+		//most likely here we should empty the
+		//stuff that is currently shown, excercise line 101
+	}).done(function(data, textStatus, jqXHR){
+		
+		if (DEBUG) {
+            console.log ("RECEIVED RESPONSE: data:",data,"; textStatus:",textStatus);
+        }
+		
+		songs = data.collection.items;
+		
+		for (var i=0; i<songs.length; i++){
+			
+			
+			var song = songs[i];
+			var song_data = song.data;
+			
+			for (var j = 0; j < song_data.length; j++){
+				if(song_data[j].name == "song_name")
+				{
+					console.log("song's name:"  + song_data[j].value);
+				}
+				
+			}
+		}
+	}).fail(function (jqXHR, textStatus, errorThrown){
+		
+		if (DEBUG) {
+            console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+        }
+        
+        alert ("Error fetching playlist, try again.");
+	});
+	
+	
+	
+	
+}
 
 /**** END RESTFUL CLIENT****/
 
@@ -378,6 +428,8 @@ function reloadUserData() {
 /*** START ON LOAD ***/
 //This method is executed when the webpage is loaded.
 $(function(){
+
+	getPlaylist(ENTRYPOINT);
 
     //TODO 1: Add corresponding click handler to all HTML buttons
     // The handlers are:

@@ -109,6 +109,14 @@ def connect_db():
     g.con = app.config['Engine'].connect()
 
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    return response
+
+
 # HOOKS
 # Copied from the exercise 3 source code
 @app.teardown_request
@@ -456,6 +464,7 @@ class Song(Resource):
 
 class Votes(Resource):
 
+
     def post(self):
 
         '''
@@ -589,8 +598,7 @@ class Playlist(Resource):
         string_data = json.dumps(envelope)
 
         return Response(string_data, 200, 
-        mimetype="application/vnd.collection+json",
-        headers={'Access-Control-Allow-Origin': '*'})
+        mimetype="application/vnd.collection+json")
 
 
 class Chat(Resource):

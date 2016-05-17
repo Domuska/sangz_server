@@ -35,6 +35,11 @@ COLLECTIONJSON = "application/vnd.collection+json",
  */
 HAL = "application/hal+json",
 
+/**
+ * JSON mime type
+*/
+CONTENT_TYPE_JSON = "application/json",
+
 /** 
  * Link to Users_profile
  * @constant {string}
@@ -73,16 +78,14 @@ ENTRYPOINT = "http://localhost:5000/sangz/api/playlist/"
 //our stuff goes here
 
 function getPlaylist(apiurl){
-	
-	console.log("hello world!");
-	
-	
-	apiurl = apiurl || ENTRYPOINT2;
+
+	apiurl = apiurl || ENTRYPOINT;
 	
 	return $.ajax({
-		
+
 		url: apiurl,
 		datatype:DEFAULT_DATATYPE
+
 	}).always(function(){
 		//most likely here we should empty the
 		//stuff that is currently shown, excercise line 101
@@ -99,14 +102,29 @@ function getPlaylist(apiurl){
 			
 			var song = songs[i];
 			var song_data = song.data;
+
+            /*
+            the song_data holds an array of some objects at this point
+            you can access them like you normally access arrays: arrayname[n]
+            to access the actual values you access them by: arrayname[n].value
+            */
+			console.log ("song's name: " + song_data[0].value);
+			console.log ("artist's name:" + song_data[1].value);
+			console.log ("vote count: " + song_data[2].value);
+			console.log("\n");
 			
-			for (var j = 0; j < song_data.length; j++){
-				if(song_data[j].name == "song_name")
-				{
-					console.log("song's name:"  + song_data[j].value);
-				}
-				
-			}
+//			for (var j = 0; j < song_data.length; j++){
+//
+//			    console.log("song's name:"  + song_data[j].value);
+//
+//
+////				if(song_data[j].name == "song_name")
+////				{
+////					console.log("song's name:"  + song_data[j].value);
+////				}
+//
+//			}
+
 		}
 	}).fail(function (jqXHR, textStatus, errorThrown){
 		
@@ -116,10 +134,35 @@ function getPlaylist(apiurl){
         
         alert ("Error fetching playlist, try again.");
 	});
-	
-	
-	
-	
+
+}
+
+// done with help from exercise4 - users_collection_add_item 609
+function postVote(apiurl, data){
+
+    return $.ajax({
+        url: apiurl,
+        type: "POST",
+        data:data,
+        processData: false,
+        contentType: CONTENT_TYPE_JSON
+    }).done(function (data, textStatus, jqXHR){
+
+        if (DEBUG) {
+            console.log ("RECEIVED RESPONSE: data:",data,"; textStatus:",textStatus);
+        }
+
+        alert ("Vote added");
+
+    }).fail(function (jqXHR, textStatus, errorThrown){
+
+        if (DEBUG) {
+            console.log ("RECEIVED ERROR: textStatus:",textStatus, ";error:",errorThrown);
+        }
+
+        alert ("Error fetching playlist, try again.");
+    })
+
 }
 
 /**** END RESTFUL CLIENT****/
@@ -418,6 +461,26 @@ function reloadUserData() {
 /**** BUTTON HANDLERS ****/
 
 
+function handleAddVote(event){
+
+    console.log("pushed upvote button");
+    event.preventDefault();
+
+//    var $form = $(this).closest("form");
+//    var template = serializeFormTemplate($form);
+//	var url = $form.attr("action");
+
+//    var url = $("upvotebutton").attr("action");
+    var url = "http://localhost:5000/sangz/api/votes/";
+    console.log(url);
+
+    data = "{\"type\": \"upvote\", \"voter_id\": \"1\",\"song_id\": \"2\"}"
+    console.log(data);
+
+
+	postVote(url, data);
+}
+
 
 /**** END BUTTON HANDLERS ****/
 
@@ -430,6 +493,9 @@ function reloadUserData() {
 $(function(){
 
 	getPlaylist(ENTRYPOINT);
+
+    $("#upvotebutton").on("click", handleAddVote);
+
 
     //TODO 1: Add corresponding click handler to all HTML buttons
     // The handlers are:

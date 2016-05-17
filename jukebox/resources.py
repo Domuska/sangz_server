@@ -265,49 +265,31 @@ class Songs(Resource):
         songs_db = g.con.get_songs()
         template = {
             "data": [
+			{"prompt": "", "name":"user_id",
+             "value":""},
             {"prompt": "", "name":"song_name",
-             "value":""},
-             {"prompt": "", "name":"media_location",
-             "value":""},
-             {"prompt": "", "name":"media_type",
-             "value":""},
-             {"prompt": "", "name":"artist_id",
-             "value":""},
-             {"prompt": "", "name":"album_id",
-             "value":""},
-             {"prompt": "", "name":"user_id",
              "value":""}
+             #{"prompt": "", "name":"media_location",
+             #"value":""},
+             #{"prompt": "", "name":"media_type",
+             #"value":""},
+             #{"prompt": "", "name":"artist_id",
+             #"value":""},
+             #{"prompt": "", "name":"album_id",
+             #"value":""},
+             #{"prompt": "", "name":"user_id",
+             #"value":""}
             ]
         }
         collection = Collection(api.url_for(Songs), template = template)
         collection.version = "1.0"
         #create items
-        items = []
         print songs_db
         for song in songs_db:
-            _songid = song['songid']
-            _songname = song['song_name']
-            _songlocation = song['media_location']
-            _songtype = song['media_type']
-            _artist = song['artist_id']
-            _album = song['album_id']
-            _user = song['user_id']
-            _url = api.url_for(Songs, songid=_songid)
-            song = {}
-            song['href'] = _url
-            song['data'] = []
-            value = [
-            {"name":"song_name", "value":_songname},
-             {"name":"media_location", "value":_songlocation},
-             {"name":"media_type", "value":_songtype},
-             {"name":"artist_id", "value":_artist},
-             {"name":"album_id","value":_album},
-             {"name":"user_id","value":_user}
-            ]
-            song['data'].append(value)
-            song['links'] = []
-            items.append(song)
-        collection['items'] = items
+			print song
+			item = Item(api.url_for(Songs, songid=song['song_id']))
+            item.data.append(Data("ID",song[0]))
+			item.data.append(Data("songname",song[1]))
         
         #create envelope
         

@@ -382,7 +382,6 @@ class Song(Resource):
         string_data = json.dumps(response)
 
         return Response(string_data, 200, mimetype="application/hal+json;/profiles/songs-profile")
-    
 
     def put(self, songid):
         #CHECK THAT SONG EXISTS
@@ -402,14 +401,14 @@ class Song(Resource):
         #get_json returns a python dictionary after serializing the request body
         #get_json returns None if the body of the request is not formatted
         # using JSON
-        request_body = request.get_json(force=True)
-        if not request_body:
+        request_dict = request.get_json(force=True)
+        if not request_dict:
             return create_error_response(415, "Unsupported Media Type",
                                          "Use a JSON compatible format"
                                         )
 
         try:
-            data = request_body['template']['data']
+            # data = request_body['template']['data']
             song_name = None
             media_location = None
             media_type = None
@@ -417,22 +416,26 @@ class Song(Resource):
             album_id = None
             user_id = None
 
-            for d in data:
-                #This code has a bad performance. We write it like this for
-                #simplicity. Another alternative should be used instead.
-                if d['name'] == 'songname':
-                    song_name = d['value']
-                elif d['name'] == 'medialocation':
-                    media_location = d['value']
-                elif d['name'] == 'mediatype':
-                    media_type = d['value']
-                elif d['name'] == 'Artist_ID':
-                    artist_id = d['value']
-                elif d['name'] == 'Album_ID':
-                    album_id = d['value']
-                elif d['name'] == 'user_id':
-                    user_id = d['value']
-                
+            try:
+                song_name = request_dict['songname']
+            except KeyError:
+                pass
+            try:
+                media_location = request_dict['medialocation']
+            except KeyError:
+                pass
+            try:
+                media_type = request_dict['mediatype']
+            except KeyError:
+                pass
+            try:
+                artist_id = request_dict['Artist_ID']
+            except KeyError:
+                pass
+            try:
+                album_id = request_dict['Album_ID']
+            except KeyError:
+                pass
 
             #CHECK THAT DATA RECEIVED IS CORRECT
             if not song_name or not media_location:
@@ -444,7 +447,8 @@ class Song(Resource):
             return create_error_response(400, "Wrong request format2",
                                          "Be sure you include song name and location")
         #Create the new message and build the response code'
-        newsongid = g.con.modify_song(song_name, media_location, media_type, artist_id, album_id, user_id)
+
+        newsongid = g.con.modify_song(songid, song_name, media_location, media_type, artist_id, album_id, user_id)
         if not newsongid:
             return create_error_response(500, "Problem with the database",
                                          "Cannot access the database")

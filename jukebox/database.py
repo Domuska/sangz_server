@@ -562,7 +562,7 @@ class Connection(object):
 
         if song_name is None or media_location is None or media_type is None or artist_ID is None or album_ID is None or uploader_ID is None:
             song_info = self.get_song(song_ID)
-            
+
             if song_name is None:
                 song_name = song_info['song_name']
                 

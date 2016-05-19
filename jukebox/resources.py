@@ -162,7 +162,6 @@ class Users(Resource):
         collection = Collection(api.url_for(Users), template = template)
         collection.version = "1.0"
         for user in users:
-            print user
             item = Item(api.url_for(User, userid = user[0]))
             item.data.append(Data("Id", user[0]))
             item.data.append(Data("nickname", user[1]))
@@ -218,7 +217,6 @@ class User(Resource):
         response = {}
         try:
             url = api.url_for(User, userid=userid)
-            print url
             links= {"self": {"href": url}}
             response['_links'] = links
 

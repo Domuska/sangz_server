@@ -16,7 +16,7 @@ Tests for the API are not made yet.
 However if you wish to start from scratch, you can delete the data.db from the db folder,
 and do the following:
 
-Open up python in command line and import the jukebox.py
+Open up python in command line and import the database (jukebox.database)
 initialize an object of the engine class
 run the functions create_tables and populate_tables (no arguments needed)
 

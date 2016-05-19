@@ -467,7 +467,7 @@ class Song(Resource):
 class Votes(Resource):
 
 
-    def post(self):
+    def post(self, songid):
 
         '''
         Post a new up vote for a particular song
@@ -497,19 +497,19 @@ class Votes(Resource):
         try:
             type = request_body['type']
             uploader_id = request_body['voter_id']
-            song_id = request_body['song_id']
+            # song_id = request_body['song_id']
 
-            songs_db = g.con.get_songs(song_id)
+            songs_db = g.con.get_songs(songid)
             if not songs_db:
                 error_message = create_error_response(404, "Resource not found", "No song found here!")
                 return error_message
 
 
             if VOTES_TYPE_UPVOTE == type:
-                g.con.add_upvotes(song_id, uploader_id, int(time.time()))
+                g.con.add_upvotes(songid, uploader_id, int(time.time()))
                 return Response(201)
             elif VOTES_TYPE_DOWNVOTE == type:
-                g.con.add_downvotes(song_id, uploader_id, int(time.time()))
+                g.con.add_downvotes(songid, uploader_id, int(time.time()))
                 return Response(201)
 
             else:
@@ -566,6 +566,7 @@ class Playlist(Resource):
         for key in playlist:
             song = { }
             song['href'] = api.url_for(Song, songid=key)
+            song['href_vote'] = api.url_for(Votes, songid=key)
 
             # get an individual song's details using the key in playlist dictionary
             song_db = g.con.get_song(key)
@@ -757,7 +758,7 @@ api.add_resource(Song, '/sangz/api/songs/<songid>/',
                  endpoint='song')
 api.add_resource(Chat, '/sangz/api/chat/',
                  endpoint='chat')
-api.add_resource(Votes, '/sangz/api/votes/',
+api.add_resource(Votes, '/sangz/api/votes/<songid>/',
                  endpoint='votes')
 
 

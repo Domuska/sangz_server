@@ -30,7 +30,7 @@ from datetime import datetime
 # Copied from the exercise 3 source code
 
 MIME_TYPE_COLLECTION_JSON = "application/vnd.collection+json"
-MIME_TYPE_APPLICATION_JSON = "application/json"
+MIME_TYPE_APPLICATION_JSON = "application/json; charset=utf-8"
 MIME_TYPE_HAL = "application/hal+json"
 FORUM_USER_PROFILE ="/profiles/user-profile"
 FORUM_MESSAGE_PROFILE = "/profiles/message-profile"
@@ -484,7 +484,6 @@ class Votes(Resource):
         404 if the supplied song_id is faulty
         415 if the wrong content type is used
         '''
-
 
         if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
             return create_error_response(415, UnsupportedMediaType,

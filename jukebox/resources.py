@@ -30,7 +30,7 @@ from datetime import datetime
 # Copied from the exercise 3 source code
 
 MIME_TYPE_COLLECTION_JSON = "application/vnd.collection+json"
-MIME_TYPE_APPLICATION_JSON = "application/json; charset=UTF-8"
+MIME_TYPE_APPLICATION_JSON = "application/json; charset=utf-8"
 MIME_TYPE_HAL = "application/hal+json"
 FORUM_USER_PROFILE ="/profiles/user-profile"
 FORUM_MESSAGE_PROFILE = "/profiles/message-profile"
@@ -171,7 +171,7 @@ class Users(Resource):
         return Response(string_data, 200, mimetype="application/vnd.collection+json")
 
     def post (self):
-        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
+        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', '').lower():
             return create_error_response(415, UnsupportedMediaType,
                                          'Use JSON format in the request and use a proper header')
         username = None
@@ -303,7 +303,7 @@ class Songs(Resource):
 
     def post(self):
         
-        if MIME_TYPE_COLLECTION_JSON != request.headers.get('Content-Type',''):
+        if MIME_TYPE_COLLECTION_JSON != request.headers.get('Content-Type','').lower():
             return create_error_response(415, "UnsupportedMediaType",
                                          "Use a JSON compatible format")
         request_body = request.get_json(force=True)
@@ -390,7 +390,7 @@ class Song(Resource):
             errormessage = create_error_response(404, "Resource not found", "No song found here!")
             return (errormessage)
 
-        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-Type',''):
+        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-Type','').lower():
             return create_error_response(415, "UnsupportedMediaType",
                                          "Use a JSON compatible format")
 
@@ -485,10 +485,7 @@ class Votes(Resource):
         415 if the wrong content type is used
         '''
 
-        print request.headers.get('Content-type', '')
-        print request.get_json(force=True)
-
-        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
+        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', '').lower():
             return create_error_response(415, UnsupportedMediaType,
                                          'Use JSON format in the request and use a proper header')
 
@@ -711,7 +708,7 @@ class Chat(Resource):
         415 if the wrong content type is used
         '''
 
-        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
+        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', '').lower():
             return create_error_response(415, UnsupportedMediaType,
                                          'Use JSON format in the request and use a proper header')
 

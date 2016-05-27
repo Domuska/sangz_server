@@ -30,7 +30,7 @@ from datetime import datetime
 # Copied from the exercise 3 source code
 
 MIME_TYPE_COLLECTION_JSON = "application/vnd.collection+json"
-MIME_TYPE_APPLICATION_JSON = "application/json; charset=utf-8"
+MIME_TYPE_APPLICATION_JSON = "application/json; charset=UTF-8"
 MIME_TYPE_HAL = "application/hal+json"
 FORUM_USER_PROFILE ="/profiles/user-profile"
 FORUM_MESSAGE_PROFILE = "/profiles/message-profile"
@@ -485,6 +485,9 @@ class Votes(Resource):
         415 if the wrong content type is used
         '''
 
+        print request.headers.get('Content-type', '')
+        print request.get_json(force=True)
+
         if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', ''):
             return create_error_response(415, UnsupportedMediaType,
                                          'Use JSON format in the request and use a proper header')
@@ -561,11 +564,15 @@ class Playlist(Resource):
 
         items = []
 
-
+        # the "items" in response is filled
         for key in playlist:
             song = { }
             song['href'] = api.url_for(Song, songid=key)
-            song['href_vote'] = api.url_for(Votes, songid=key)
+            # song['href_vote'] = api.url_for(Votes, songid=key)
+
+            song['links'] = []
+            href_object = {'href': api.url_for(Votes, songid=key)}
+            song['links'].append(href_object)
 
             # get an individual song's details using the key in playlist dictionary
             song_db = g.con.get_song(key)

@@ -29,7 +29,7 @@ from datetime import datetime
 # Constants for hypermedia formats and profiles
 # Copied from the exercise 3 source code
 
-MIME_TYPE_COLLECTION_JSON = "application/vnd.collection+json"
+MIME_TYPE_COLLECTION_JSON = "application/vnd.collection+json; charset=utf-8"
 MIME_TYPE_APPLICATION_JSON = "application/json; charset=utf-8"
 MIME_TYPE_HAL = "application/hal+json"
 FORUM_USER_PROFILE ="/profiles/user-profile"
@@ -302,7 +302,9 @@ class Songs(Resource):
         return Response(string_data, 200, mimetype="application/vnd.collection+json;/profiles/songs-profile")
 
     def post(self):
-        
+
+        print request.headers.get('Content-type', "")
+
         if MIME_TYPE_COLLECTION_JSON != request.headers.get('Content-Type','').lower():
             return create_error_response(415, "UnsupportedMediaType",
                                          "Use a JSON compatible format")

@@ -303,8 +303,6 @@ class Songs(Resource):
 
     def post(self):
 
-        print request.headers.get('Content-type', "")
-
         if MIME_TYPE_COLLECTION_JSON != request.headers.get('Content-Type','').lower():
             return create_error_response(415, "UnsupportedMediaType",
                                          "Use a JSON compatible format")

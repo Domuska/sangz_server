@@ -366,19 +366,22 @@ class Song(Resource):
 
         response = {}
         try:
-            url = api.url_for(Song, songid=songid)
-            print url
+            self_url = api.url_for(Song, songid=songid)
+            print self_url
             # links= {"self": {"href": url}}
-            response['href'] = url
+
+            response['links'] = []
+            href_object = {'votes': api.url_for(Votes, songid=songid)}
+            response['links'].append(href_object)
+            href_object = {'self': self_url}
+            response['links'].append(href_object)
 
             response['id'] = songid
             response['songname'] = songs_db['song_name']
             response['artistid'] = songs_db['artist_ID']
             response['albumid'] = songs_db['album_ID']
 
-            response['links'] = []
-            href_object = {'href': api.url_for(Votes, songid=songid)}
-            response['links'].append(href_object)
+
 
         except KeyError:
             abort(500)

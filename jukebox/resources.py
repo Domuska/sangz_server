@@ -368,7 +368,6 @@ class Song(Resource):
         try:
             self_url = api.url_for(Song, songid=songid)
             print self_url
-            # links= {"self": {"href": url}}
 
             response['links'] = []
             href_object = {'votes': api.url_for(Votes, songid=songid)}
@@ -377,10 +376,31 @@ class Song(Resource):
             response['links'].append(href_object)
 
             response['id'] = songid
-            response['songname'] = songs_db['song_name']
-            response['artistid'] = songs_db['artist_ID']
-            response['albumid'] = songs_db['album_ID']
 
+            response['songname'] = songs_db['song_name']
+
+            # get the album and artist names
+            try:
+                artist_db = g.con.get_artist(songs_db['artist_ID'])
+
+                if artist_db is None:
+                    response['Artist_name'] = ""
+                else:
+                    response['Artist_name'] = artist_db['artist_name']
+            #if there is no entry in DB with album ID, album_name is set to empty
+            except KeyError:
+                response['Artist_name'] = ""
+
+
+            try:
+                album_db = g.con.get_album(songs_db['album_id'])
+
+                if album_db is None:
+                    response['Album_name'] = ""
+                else:
+                    response['Album_name'] = album_db['album_name']
+            except KeyError:
+                response['Album_name'] = ""
 
 
         except KeyError:

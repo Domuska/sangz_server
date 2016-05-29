@@ -372,7 +372,11 @@ class Song(Resource):
             response['links'] = []
             href_object = {'votes': api.url_for(Votes, songid=songid)}
             response['links'].append(href_object)
+
             href_object = {'self': self_url}
+            response['links'].append(href_object)
+
+            href_object = {'adder': api.url_for(User, userid=songs_db['uploader_ID'])}
             response['links'].append(href_object)
 
             response['id'] = songid

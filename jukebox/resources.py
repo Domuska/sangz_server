@@ -168,7 +168,7 @@ class Users(Resource):
             collection.items.append(item)
 
         string_data = str(collection)
-        return Response(string_data, 200, mimetype="application/vnd.collection+json")
+        return Response(string_data, 200, mimetype="application/vnd.collection+json"+";"+SANGZ_USER_PROFILE)
 
     def post (self):
         if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', '').lower():
@@ -293,13 +293,13 @@ class Songs(Resource):
         print songs_db
         for song in songs_db:
             print song
-            item = Item(api.url_for(Songs, songid=song['song_id']))
+            item = Item(api.url_for(Song, songid=song[0]))
             item.data.append(Data("ID",song[0]))
             item.data.append(Data("songname",song[1]))
             collection.items.append(item)
             
         string_data = str(collection)
-        return Response(string_data, 200, mimetype="application/vnd.collection+json;/profiles/songs-profile")
+        return Response(string_data, 200, mimetype="application/vnd.collection+json"+";"+SANGZ_SONG_PROFILE)
 
     def post(self):
 
@@ -361,13 +361,15 @@ class Song(Resource):
         songs_db = g.con.get_song(songid)
         print songs_db
         if not songs_db:
-            errormessage = create_error_response(404, "Resource not found", "No song with found here!")
+            errormessage = create_error_response(404, "Resource not found", "No song found here!")
             return (errormessage)
 
         response = {}
         try:
             self_url = api.url_for(Song, songid=songid)
+            print '**************'
             print self_url
+            print '**************'
 
             response['links'] = []
             href_object = {'votes': api.url_for(Votes, songid=songid)}
@@ -412,7 +414,7 @@ class Song(Resource):
 
         string_data = json.dumps(response)
 
-        return Response(string_data, 200, mimetype="application/hal+json;/profiles/songs-profile")
+        return Response(string_data, 200, mimetype="application/hal+json"+";"+SANGZ_SONG_PROFILE)
 
     def put(self, songid):
         #CHECK THAT SONG EXISTS
@@ -421,9 +423,9 @@ class Song(Resource):
             errormessage = create_error_response(404, "Resource not found", "No song found here!")
             return (errormessage)
 
-        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-Type','').lower():
-            return create_error_response(415, "UnsupportedMediaType",
-                                         "Use a JSON compatible format")
+        if 'application/json' != request.headers.get('Content-Type','').lower():
+            return create_error_response(415, "UnsupportedMediaType1",
+                                         "1- Use a JSON compatible format")
 
 
         #PARSE THE REQUEST
@@ -433,9 +435,10 @@ class Song(Resource):
         #get_json returns None if the body of the request is not formatted
         # using JSON
         request_dict = request.get_json(force=True)
+        print request_dict
         if not request_dict:
-            return create_error_response(415, "Unsupported Media Type",
-                                         "Use a JSON compatible format"
+            return create_error_response(415, "Unsupported Media Type2",
+                                         "2- Use a JSON compatible format"
                                         )
 
         try:
@@ -487,7 +490,7 @@ class Song(Resource):
 
     def delete(self, songid):
         if g.con.delete_song(songid):
-            return '', 204
+            return Response(status=200)
         else:
             #Send error message
             return create_error_response(404, "Unable to delete",

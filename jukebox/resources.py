@@ -296,6 +296,8 @@ class Songs(Resource):
             item = Item(api.url_for(Song, songid=song[0]))
             item.data.append(Data("ID",song[0]))
             item.data.append(Data("songname",song[1]))
+            item.data.append(Data("uploader",api.url_for(User,userid=song[2])))
+            #links to artist and album are unavailable because they are not implemented
             collection.items.append(item)
             
         string_data = str(collection)
@@ -367,9 +369,7 @@ class Song(Resource):
         response = {}
         try:
             self_url = api.url_for(Song, songid=songid)
-            print '**************'
             print self_url
-            print '**************'
 
             response['links'] = []
             href_object = {'votes': api.url_for(Votes, songid=songid)}
@@ -379,6 +379,9 @@ class Song(Resource):
             response['links'].append(href_object)
 
             href_object = {'adder': api.url_for(User, userid=songs_db['uploader_ID'])}
+            response['links'].append(href_object)
+            
+            href_object = {'playlist': api.url_for(Playlist)}
             response['links'].append(href_object)
 
             response['id'] = songid
@@ -423,7 +426,7 @@ class Song(Resource):
             errormessage = create_error_response(404, "Resource not found", "No song found here!")
             return (errormessage)
 
-        if 'application/json' != request.headers.get('Content-Type','').lower():
+        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-Type','').lower():
             return create_error_response(415, "UnsupportedMediaType1",
                                          "1- Use a JSON compatible format")
 

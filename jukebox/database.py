@@ -612,7 +612,7 @@ class Connection(object):
             upperlimit = -1
 
         values = (upperlimit, offset)
-        cur.execute('SELECT song_id, song_name FROM songs LIMIT ? OFFSET ?', values)
+        cur.execute('SELECT song_id, song_name, uploader_id FROM songs LIMIT ? OFFSET ?', values)
 
         idlist = cur.fetchall()
         cur.close()

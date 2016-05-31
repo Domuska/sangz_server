@@ -77,7 +77,6 @@ class Engine(object):
             cur.execute("DELETE FROM songs")
             cur.execute("DELETE FROM albums")
             cur.execute("DELETE FROM artists")
-            cur.execute("DELETE FROM login")
             cur.execute("DELETE FROM chat")
             cur.execute("DELETE FROM users")
             #NOTE the order of cleanup matters since tables have foreign keys
@@ -531,7 +530,7 @@ class Connection(object):
         cur.close()
 
         if row is None:
-            print 'no song with this ID found'
+            # print 'no song with this ID found'
             return None
 
         song_info = {'song_id': row[0], 'song_name': row[1], 'media_location': row[2],
@@ -618,7 +617,45 @@ class Connection(object):
         cur.close()
         return idlist
 
+    def get_songs_filtered(self, album=None, artist=None, song_name=None, user_id=None):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        self.set_foreign_keys_support()
+        temp_values = []
+        statement = 'SELECT song_id, song_name, uploader_id FROM songs'
+        if(album or artist or song_name or user_id):
+            statement += ' WHERE'
 
+        if album:
+            statement += ' album_id=? AND'
+            temp_values.append(album)
+
+        if artist:
+            statement += ' artist_id=? AND'
+            temp_values.append(artist)
+
+        if song_name:
+            statement += ' song_name=? AND'
+            temp_values.append(song_name)
+
+        if user_id:
+            statement += ' uploader_id=? AND'
+            temp_values.append(user_id)
+
+        statement = statement[:-3]
+        statement += ";"
+        values = tuple(temp_values)
+        print "***********"
+        print statement
+        print values
+        print temp_values
+
+        cur.execute(statement, values)
+        songs = cur.fetchall()
+        cur.close()
+        print songs
+        print "###########"
+        return songs
 
 
     #ARTIST TABLE BEGINS HERE ----------------------------------------------

@@ -86,6 +86,16 @@ class SongsDBAPITestCase(unittest.TestCase):
         result = self.connection.get_songs()
         self.assertGreater(len(result),0)
 
+    def test_get_some_songs(self):
+        result = self.connection.get_songs_filtered(user_id=3)
+        # print result
+        self.assertEqual(len(result), 2)
+        result = self.connection.get_songs_filtered(song_name="Piiskaa prkl")
+        # print result
+        self.assertEqual(len(result), 1)
+        result = self.connection.get_songs_filtered(song_name="One", artist=2)
+        # print result
+        self.assertEqual(len(result), 1)
 
 if __name__ == '__main__':
     print 'Start running Songs tests'

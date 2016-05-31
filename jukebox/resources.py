@@ -230,6 +230,7 @@ class User(Resource):
                     "home": {"href": api.url_for(Frontpage)},
                     "users": {"href": api.url_for(Users)},
                     "songs": {"href": api.url_for(Songs)},
+                    "songs by user": {"href": api.url_for(Songs)+"?user_id="+str(userid)},
                     "playlist": {"href": api.url_for(Playlist)},
                     "chat": {"href": api.url_for(Chat)}
                     }

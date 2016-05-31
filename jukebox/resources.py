@@ -226,9 +226,15 @@ class User(Resource):
 
         try:
             url = api.url_for(User, userid=userid)
-            links= {"self": {"href": url}}
-            response['_links'] = links
+            links= {"self": {"href": url},
+                    "home": {"href": api.url_for(Frontpage)},
+                    "users": {"href": api.url_for(Users)},
+                    "songs": {"href": api.url_for(Songs)},
+                    "playlist": {"href": api.url_for(Playlist)},
+                    "chat": {"href": api.url_for(Chat)}
+                    }
 
+            response['_links'] = links
             response['id'] = userid
             response['username'] = user['username']
             response['realname'] = user['realname']
@@ -384,42 +390,20 @@ class Song(Resource):
 
         response = {}
         try:
-            self_url = api.url_for(Song, songid=songid)
-            print self_url
-
-            links = [
-                {'prompt': 'Go back to home page',
-                 'rel': 'homepage',
-                 'href': api.url_for(Frontpage)},
-                {"href": api.url_for(Users),
-                 "rel": "Users",
-                 "prompt": "Get the list of all users"},
-                {"href": api.url_for(Songs),
-                 "rel": "Songs",
-                 "prompt": "Get the list of all available songs"},
-                {'prompt': 'See the current playlist',
-                 'rel': 'Playlist',
-                 'href': api.url_for(Playlist)},
-                {'prompt': 'See the chat',
-                 'rel': 'Chat',
-                 'href': api.url_for(Chat)}
-            ]
-            response['links'] = links
-
-
-
-            href_object = {'votes': api.url_for(Votes, songid=songid)}
-            response['links'].append(href_object)
-            href_object = {'self': self_url}
-            response['links'].append(href_object)
-            href_object = {'adder': api.url_for(User, userid=songs_db['uploader_ID'])}
-            response['links'].append(href_object)
-            href_object = {'playlist': api.url_for(Playlist)}
-            response['links'].append(href_object)
-
             response['id'] = songid
-
             response['songname'] = songs_db['song_name']
+
+            links = {"self": {"href": api.url_for(Song, songid=songid)},
+                     "home": {"href": api.url_for(Frontpage)},
+                     "users": {"href": api.url_for(Users)},
+                     "songs": {"href": api.url_for(Songs)},
+                     "playlist": {"href": api.url_for(Playlist)},
+                     "chat": {"href": api.url_for(Chat)},
+                     "votes": {"href": api.url_for(Votes, songid=songid)},
+                     "adder": {"href": api.url_for(User, userid=songs_db['uploader_ID'])}
+                     }
+            response['_links'] = links
+
 
             # get the album and artist names
             try:

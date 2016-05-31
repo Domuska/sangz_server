@@ -426,9 +426,10 @@ class Song(Resource):
             errormessage = create_error_response(404, "Resource not found", "No song found here!")
             return (errormessage)
 
-        if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-Type','').lower():
+        content_type = request.headers.get('Content-Type','').lower()
+        if MIME_TYPE_APPLICATION_JSON != content_type:
             return create_error_response(415, "UnsupportedMediaType1",
-                                         "1- Use a JSON compatible format")
+                                         "1- Use a JSON compatible format and and utf-8 encoding")
 
 
         #PARSE THE REQUEST

@@ -283,7 +283,15 @@ class User(Resource):
 class Songs(Resource):
     def get(self):
         #connect to the db
-        songs_db = g.con.get_songs()
+        args = request.args
+        try:
+            user_id = int(args['user_id'])
+        except (KeyError, ValueError):
+            user_id = None
+
+
+        # songs_db = g.con.get_songs() old non filtering db call
+        songs_db = g.con.get_songs_filtered(user_id=user_id)
 
         links = [{"href": "www.sangz.com", "rel": "home"},
                  {"href": api.url_for(Users), "rel": "Users", "prompt": "Get the list of all users"},

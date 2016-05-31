@@ -628,11 +628,11 @@ class Connection(object):
 
         if album:
             statement += ' album_id=? AND'
-            temp_values.append(album)
+            temp_values.append(int(album))
 
         if artist:
             statement += ' artist_id=? AND'
-            temp_values.append(artist)
+            temp_values.append(int(artist))
 
         if song_name:
             statement += ' song_name=? AND'
@@ -640,21 +640,16 @@ class Connection(object):
 
         if user_id:
             statement += ' uploader_id=? AND'
-            temp_values.append(user_id)
+            temp_values.append(int(user_id))
 
-        statement = statement[:-3]
+        if(album or artist or song_name or user_id):
+            statement = statement[:-3]
+
         statement += ";"
         values = tuple(temp_values)
-        print "***********"
-        print statement
-        print values
-        print temp_values
-
         cur.execute(statement, values)
         songs = cur.fetchall()
         cur.close()
-        print songs
-        print "###########"
         return songs
 
 

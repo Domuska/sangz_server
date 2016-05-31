@@ -43,6 +43,7 @@ APIARY_PROFILES_URL = "http://docs.pwpsangz.apiary.io/#reference/hypermedia-prof
 VOTES_TYPE_UPVOTE = 'upvote'
 VOTES_TYPE_DOWNVOTE = 'downvote'
 
+
 # Define the application and the api
 # Copied from the exercise 3 source code
 app = Flask(__name__)
@@ -53,8 +54,6 @@ app.debug = True
 app.config.update({'Engine': database.Engine()})
 # Start the RESTful API.
 api = Api(app)
-
-
 
 # ERROR HANDLERS
 # Copied from the exercise 3 source code
@@ -154,12 +153,21 @@ class Users(Resource):
     def get(self):
         #get users from database
         users = g.con.get_users()
+
         template = {
             "data": [
                 {'name': 'nickname', 'value': '', 'prompt': ''}
             ]
         }
-        collection = Collection(api.url_for(Users), template = template)
+
+        links = [{"href": "www.sangz.com","rel": "home"},
+                 {"href": api.url_for(Songs), "rel": "Songs", 'prompt': 'See the list of all songs'},
+                 {"href": api.url_for(Playlist), "rel": "Playlist", "prompt":"See the current playlist"},
+                 {"href": api.url_for(Chat), "rel": "Chat", "prompt": "See the conversation"}
+                 ]
+
+        #links = {}
+        collection = Collection(api.url_for(Users), template=template, links=links)
         collection.version = "1.0"
         for user in users:
             item = Item(api.url_for(User, userid = user[0]))
@@ -215,6 +223,7 @@ class User(Resource):
             abort(404)
 
         response = {}
+
         try:
             url = api.url_for(User, userid=userid)
             links= {"self": {"href": url}}
@@ -269,6 +278,13 @@ class Songs(Resource):
     def get(self):
         #connect to the db
         songs_db = g.con.get_songs()
+
+        links = [{"href": "www.sangz.com", "rel": "home"},
+                 {"href": api.url_for(Users), "rel": "Users", "prompt": "Get the list of all users"},
+                 {"href": api.url_for(Playlist), "rel": "Playlist", "prompt": "See the current playlist"},
+                 {"href": api.url_for(Chat), "rel": "Chat", "prompt": "See the conversation"}
+                 ]
+
         template = {
             "data": [
             {"prompt": "", "name":"user_id",
@@ -287,7 +303,7 @@ class Songs(Resource):
              #"value":""}
             ]
         }
-        collection = Collection(api.url_for(Songs), template = template)
+        collection = Collection(api.url_for(Songs), template = template, links=links)
         collection.version = "1.0"
         #create items
         print songs_db
@@ -371,16 +387,33 @@ class Song(Resource):
             self_url = api.url_for(Song, songid=songid)
             print self_url
 
-            response['links'] = []
+            links = [
+                {'prompt': 'Go back to home page',
+                 'rel': 'homepage',
+                 'href': api.url_for(Frontpage)},
+                {"href": api.url_for(Users),
+                 "rel": "Users",
+                 "prompt": "Get the list of all users"},
+                {"href": api.url_for(Songs),
+                 "rel": "Songs",
+                 "prompt": "Get the list of all available songs"},
+                {'prompt': 'See the current playlist',
+                 'rel': 'Playlist',
+                 'href': api.url_for(Playlist)},
+                {'prompt': 'See the chat',
+                 'rel': 'Chat',
+                 'href': api.url_for(Chat)}
+            ]
+            response['links'] = links
+
+
+
             href_object = {'votes': api.url_for(Votes, songid=songid)}
             response['links'].append(href_object)
-
             href_object = {'self': self_url}
             response['links'].append(href_object)
-
             href_object = {'adder': api.url_for(User, userid=songs_db['uploader_ID'])}
             response['links'].append(href_object)
-            
             href_object = {'playlist': api.url_for(Playlist)}
             response['links'].append(href_object)
 
@@ -517,7 +550,7 @@ class Votes(Resource):
         'song_id': song on which the up- or downvote is cast on
 
         Response status codes
-        201 if a new vote is added
+        201 if a new vote is added////
         400 if the sent message does not include all required fields
         404 if the supplied song_id is faulty
         415 if the wrong content type is used
@@ -585,17 +618,22 @@ class Playlist(Resource):
         playlist = get_playlist()
 
 
+        links = [{"href": "www.sangz.com", "rel": "home"},
+                 {"href": api.url_for(Users), "rel": "Users", "prompt": "Get the list of all users"},
+                 {"href": api.url_for(Chat), "rel": "Chat", "prompt": "Get chat messages"},
+                 {'prompt': 'see the full list of songs',
+                  'rel': 'Songs',
+                  'href': api.url_for(Songs)}
+                 ]
+
         envelope = {}
         collection = {}
         envelope['collection'] = collection
 
+        collection['links'] = links
         collection['version'] = "1.0"
         collection['href'] = api.url_for(Playlist)
         # todo: add the links when other resources are added to the routes
-        collection['links'] = [{'prompt': 'see the full list of songs',
-                                'rel': 'songs',
-                                'href': api.url_for(Songs)}
-                               ]
 
         items = []
 
@@ -673,11 +711,17 @@ class Chat(Resource):
         collection['version'] = '1.0'
         collection['href'] = api.url_for(Chat)
         # todo: add links when other resources are added to the routes
+
         collection['links'] = [
             {'prompt': 'Go back to home page',
              'rel': 'homepage',
              'href': api.url_for(Frontpage)},
-
+            {"href": api.url_for(Users),
+             "rel": "Users",
+             "prompt": "Get the list of all users"},
+            {"href": api.url_for(Songs),
+             "rel": "Songs",
+             "prompt": "Get the list of all available songs"},
             {'prompt': 'See the current playlist',
              'rel': 'playlist',
              'href': api.url_for(Playlist)},

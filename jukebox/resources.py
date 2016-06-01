@@ -148,11 +148,13 @@ class Users(Resource):
 
         template = {
             "data": [
-                {'name': 'nickname', 'value': '', 'prompt': ''}
+                {'name': 'Username', 'value': '', 'prompt': ''},
+				{'name': 'Realname', 'value':'', 'prompt':''},
+				{'name': 'Email', 'value':'', 'prompt':''}
             ]
         }
 
-        links = [{"href": "www.sangz.com","rel": "home"},
+        links = [#{"href": "www.sangz.com","rel": "home"},
                  {"href": api.url_for(Songs), "rel": "Songs", 'prompt': 'See the list of all songs'},
                  {"href": api.url_for(Playlist), "rel": "Playlist", "prompt":"See the current playlist"},
                  {"href": api.url_for(Chat), "rel": "Chat", "prompt": "See the conversation"}
@@ -285,7 +287,7 @@ class Songs(Resource):
         # songs_db = g.con.get_songs() old non filtering db call
         songs_db = g.con.get_songs_filtered(user_id=user_id)
 
-        links = [{"href": "www.sangz.com", "rel": "home"},
+        links = [#{"href": "www.sangz.com", "rel": "home"},
                  {"href": api.url_for(Users), "rel": "Users", "prompt": "Get the list of all users"},
                  {"href": api.url_for(Playlist), "rel": "Playlist", "prompt": "See the current playlist"},
                  {"href": api.url_for(Chat), "rel": "Chat", "prompt": "See the conversation"}
@@ -598,7 +600,7 @@ class Playlist(Resource):
         playlist = get_playlist()
 
 
-        links = [{"href": "www.sangz.com", "rel": "home"},
+        links = [#{"href": "www.sangz.com", "rel": "home"},
                  {"href": api.url_for(Users), "rel": "Users", "prompt": "Get the list of all users"},
                  {"href": api.url_for(Chat), "rel": "Chat", "prompt": "Get chat messages"},
                  {'prompt': 'see the full list of songs',

@@ -1,4 +1,4 @@
-Authors: Tomi Lämsä, Kalle Lyttinen, Pramod Guruprasad
+﻿Authors: Tomi Lämsä, Kalle Lyttinen, Pramod Guruprasad
 
 The following python modules are required:
     sqlite3
@@ -7,7 +7,7 @@ The following python modules are required:
     collection-json
 
 When you clone the repository, the database should already be populated.
-In the root of sangz server, run: python -m jukebox.resources.
+In the root of sangz server, run: python -m jukebox.resources, or alternatively just python sangz.py.
 API is available in http://localhost:5000/sangz/api/<resouce_name>,
 for example, http://localhost:5000/sangz/api/playlist
 
@@ -23,8 +23,12 @@ python -m test.database_api_tests_users
 python -m test.database_api_tests_songs
 python -m test.database_api_tests_login
 
+
+
 List of APIs available: http://docs.pwpsangz.apiary.io/#
 
 Possible issues while exetuing APIs:
 It has been found that certain REST clients enfore the trailing "/" for all commands. If the client reports an error, retry by using the trailing "/".
-If the API fails, report the error to us.
+If the API fails, please report the error to us.
+
+in the client_old folder is our original client ideas which we decided not to implement in the end when we decided to do an Android app instead. This can be found in the separate repository sangz_client.

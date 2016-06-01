@@ -1,6 +1,3 @@
-
-# todo: we should prolly split this file into multiple ones. no point having this one big-ass file
-
 # Instructions:
 # navigate to root of sangz server, and run: python -m jukebox.resources
 # then open the page on your browser in address http://localhost:5000/sangz/XXX
@@ -95,7 +92,7 @@ def resource_request_malformed(error):
 @app.errorhandler(500)
 def unknown_error(error):
     return create_error_response(500, "Error",
-                                 "The system has failed. Please, contact the administrator")
+                                 "The system has failed. Please contact the administrator")
 
 # Copied from the exercise 3 source code
 @app.before_request
@@ -143,10 +140,12 @@ def get_playlist():
 # The skeletons are still missing their proper arguments, add them as you work.
 # The original methods from exercise 3 are removed, but take a look at them for help as you work.
 
-class Frontpage(Resource):
-
-    def get(self):
-        return Response("you're at the front page of sangz service", 200, mimetype="text/html")
+#class Frontpage(Resource):
+#
+#    def get(self):
+#       return Response("you're at the front page of sangz service", 200, mimetype="text/html")
+#
+#*** Removed as its of no major use in the android client. Playlist is the new "homepage"
 
 class Users(Resource):
 
@@ -227,7 +226,7 @@ class User(Resource):
         try:
             url = api.url_for(User, userid=userid)
             links= {"self": {"href": url},
-                    "home": {"href": api.url_for(Frontpage)},
+                    #"home": {"href": api.url_for(Frontpage)},
                     "users": {"href": api.url_for(Users)},
                     "songs": {"href": api.url_for(Songs)},
                     "songs by user": {"href": api.url_for(Songs)+"?user_id="+str(userid)},
@@ -403,7 +402,7 @@ class Song(Resource):
             response['songname'] = songs_db['song_name']
 
             links = {"self": {"href": api.url_for(Song, songid=songid)},
-                     "home": {"href": api.url_for(Frontpage)},
+                     #"home": {"href": api.url_for(Frontpage)},
                      "users": {"href": api.url_for(Users)},
                      "songs": {"href": api.url_for(Songs)},
                      "playlist": {"href": api.url_for(Playlist)},
@@ -529,21 +528,18 @@ class Song(Resource):
 
 
 class Votes(Resource):
-
-
     def post(self, songid):
 
         '''
         Post a new up vote for a particular song
 
-        Media type supported: application/JSON
         Fields required:
         'type': 'upvote' or 'downvote
         'uploader_id': ID of the user casting a vote
         'song_id': song on which the up- or downvote is cast on
 
         Response status codes
-        201 if a new vote is added////
+        201 if a new vote is added
         400 if the sent message does not include all required fields
         404 if the supplied song_id is faulty
         415 if the wrong content type is used
@@ -706,9 +702,9 @@ class Chat(Resource):
         # todo: add links when other resources are added to the routes
 
         collection['links'] = [
-            {'prompt': 'Go back to home page',
-             'rel': 'homepage',
-             'href': api.url_for(Frontpage)},
+            #{'prompt': 'Go back to home page',
+             #'rel': 'homepage',
+             #'href': api.url_for(Frontpage)},
             {"href": api.url_for(Users),
              "rel": "Users",
              "prompt": "Get the list of all users"},
@@ -826,8 +822,7 @@ api.add_resource(Users, '/sangz/api/users/',
                  endpoint='users')
 api.add_resource(User, '/sangz/api/users/<userid>',
                  endpoint = 'user')
-api.add_resource(Frontpage, '/sangz/api/',
-                 endpoint='')
+#api.add_resource(Frontpage, '/sangz/api/', endpoint='')
 api.add_resource(Playlist, '/sangz/api/playlist/',
                  endpoint='playlist')
 api.add_resource(Songs, '/sangz/api/songs/',
@@ -838,6 +833,7 @@ api.add_resource(Chat, '/sangz/api/chat/',
                  endpoint='chat')
 api.add_resource(Votes, '/sangz/api/votes/<songid>/',
                  endpoint='votes')
+#api.add_resource(Votes, '/sangz/api/votes/', endpoint='votes')
 
 
 # won't be implemented

@@ -228,9 +228,9 @@ class User(Resource):
             url = api.url_for(User, userid=userid)
             links= {"self": {"href": url},
                     "home": {"href": api.url_for(Frontpage)},
-                    "users": {"href": api.url_for(Users)},
+                    "parent": {"href": api.url_for(Users)},
                     "songs": {"href": api.url_for(Songs)},
-                    "songs by user": {"href": api.url_for(Songs)+"?user_id="+str(userid)},
+                    "uploaded_songs": {"href": api.url_for(Songs)+"?user_id="+str(userid)},
                     "playlist": {"href": api.url_for(Playlist)},
                     "chat": {"href": api.url_for(Chat)}
                     }
@@ -409,7 +409,7 @@ class Song(Resource):
                      "playlist": {"href": api.url_for(Playlist)},
                      "chat": {"href": api.url_for(Chat)},
                      "votes": {"href": api.url_for(Votes, songid=songid)},
-                     "adder": {"href": api.url_for(User, userid=songs_db['uploader_ID'])}
+                     "uploader": {"href": api.url_for(User, userid=songs_db['uploader_ID'])}
                      }
             response['_links'] = links
 
@@ -638,7 +638,9 @@ class Playlist(Resource):
 
             song['links'] = []
             href_object = {'href': api.url_for(Votes, songid=key)}
+            href_object['rel'] = 'votes'
             song['links'].append(href_object)
+
 
             # get an individual song's details using the key in playlist dictionary
             song_db = g.con.get_song(key)

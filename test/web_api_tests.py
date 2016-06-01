@@ -1,8 +1,3 @@
-'''
-Created on 26.01.2013
-Modified on 24.02.2016
-@author: ivan
-'''
 import unittest, copy
 import json
 
@@ -14,6 +9,7 @@ import jukebox.database as database
 DB_PATH = 'db/sangz_test.db'
 ENGINE = database.Engine(DB_PATH)
 
+APPJSON = "application/json; charset=utf-8"
 COLLECTIONJSON = "application/vnd.collection+json"
 HAL = "application/hal+json"
 
@@ -31,7 +27,7 @@ resources.app.config.update({'Engine': ENGINE})
 
 #Other database parameters.
 initial_messages = 20
-initial_users = 5
+initial_users = 4
 
 
 class ResourcesAPITestCase(unittest.TestCase):
@@ -71,6 +67,11 @@ class ResourcesAPITestCase(unittest.TestCase):
         self.app_context.pop()
 
 class ChatTestCase (ResourcesAPITestCase):
+    """
+    Class for testing Chat resource of sangz server
+    """
+
+    # TODO write some test data based on this example below
 
     #Anonymous user
     message_1_request = {"template": {
@@ -80,45 +81,6 @@ class ChatTestCase (ResourcesAPITestCase):
                                              " hypermedia course?"}
         ]}
     }
-
-    #Existing user
-    message_2_request = {"template": {
-        "data": [
-            {"name": "headline", "value": "Hypermedia course"},
-            {"name": "articleBody", "value": "Do you know any good online"
-                                             " hypermedia course?"},
-            {"name": "author", "value": "Axel"}
-        ]}
-    }
-
-    #Non exsiting user
-    message_3_request = {"template": {
-        "data": [
-            {"name": "headline", "value": "Hypermedia course"},
-            {"name": "articleBody", "value": "Do you know any good online"
-                                             " hypermedia course?"},
-            {"name": "author", "value": "Onethatwashere"}
-        ]}
-    }
-
-    #Missing the headline
-    message_4_wrong = {"template": {
-        "data": [
-            {"name": "articleBody", "value": "Do you know any good online"
-                                             " hypermedia course?"},
-            {"name": "author", "value": "Onethatwashere"}
-        ]}
-    }
-
-    #Missing the articleBody
-    message_5_wrong = {"template": {
-        "data": [
-            {"name": "articleBody", "value": "Do you know any good online"
-                                             " hypermedia course?"},
-            {"name": "author", "value": "Onethatwashere"}
-        ]}
-    }
-
 
     url = "/forum/api/chat/"
 
@@ -261,91 +223,77 @@ class ChatTestCase (ResourcesAPITestCase):
 
 class UsersTestCase (ResourcesAPITestCase):
 
-    user_1_request = {"template": {
-        "data": [
-            {"name": "nickname", "value": "Rigors"},
-            {"object": {"addressLocality":'Manchester', "addressCountry":"UK"},
-             "name": "address"},
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rigors@gmail.com"},
-            {"name": "familyName", "value": "Rigors"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Reagan"},
-            {"name": "image", "value": "image2.jpg"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-            {"name": "skype", "value": "rigors"},
-            {"name": "telephone", "value": "0445555666"},
-            {"name": "website", "value": "http://rigors.com"}
-        ]}
+    new_user_request = {
+        "template": {
+            "data": [
+                {
+                    "name": "Username",
+                    "value": "Test_user1"
+                },
+                {
+                    "name": "Real_Name",
+                    "value": "Tahvo Testaaja"
+                },
+                {
+                    "name": "Email",
+                    "value": "maili1@abc.com"
+                }
+            ]
+        }
     }
 
-    user_2_request = {"template": {
-        "data": [
-            {"name": "nickname", "value": "Rango"},
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
-    }
 
-    #Existing nickname
-    user_wrong_1_request =  {"template": {
-        "data": [
-            {"name": "nickname", "value": "AxelW"},
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
-    }
-
-    #Mssing nickname
-    user_wrong_2_request =  {"template": {
-        "data": [
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
+    new_user_request2 = {
+        "template": {
+            "data": [
+                {
+                    "name": "Username",
+                    "value": "Test_user2"
+                },
+                {
+                    "name": "Real_Name",
+                    "value": "Touko Testaaja"
+                },
+                {
+                    "name": "Email",
+                    "value": "maili2@abc.com"
+                }
+            ]
+        }
     }
 
     #Missing mandatory
-    user_wrong_3_request = {"template": {
-        "data": [
-            {"name": "nickname", "value": "Rango"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
+    new_user_request_missing = {
+        "template": {
+            "data": [
+                {
+                    "name": "Real_Name",
+                    "value": "Tahvo Testaaja"
+                },
+                {
+                    "name": "Email",
+                    "value": "maili1@abc.com"
+                }
+            ]
+        }
     }
 
-    #Wrong address
-    user_wrong_4_request = {"template": {
-        "data": [
-            {"name": "nickname", "value": "Rango"},
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "address", "value": "Indonesia, Spain"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
+    #Invalid format
+    new_user_bad_format = {
+        "template": {
+            "data": [
+                {
+                    "badname": "Real_Name",
+                    "value": "Tahvo Testaaja"
+                },
+                {
+                    "namn": "Email",
+                    "value": "maili1@abc.com"
+                }
+            ]
+        }
     }
+
 
     def setUp(self):
         super(UsersTestCase, self).setUp()
@@ -353,12 +301,11 @@ class UsersTestCase (ResourcesAPITestCase):
                                          _external=False)
 
     def test_url(self):
-        return True
         '''
         Checks that the URL points to the right resource
         '''
         #NOTE: self.shortDescription() shuould work.
-        _url = '/forum/api/users/'
+        _url = '/sangz/api/users/'
         print '('+self.test_url.__name__+')', self.test_url.__doc__,
         with resources.app.test_request_context(_url):
             rule = flask.request.url_rule
@@ -366,7 +313,6 @@ class UsersTestCase (ResourcesAPITestCase):
             self.assertEquals(view_point, resources.Users)
 
     def test_get_users(self):
-        return True
         '''
         Checks that GET users return correct status code and data format
         '''
@@ -383,25 +329,9 @@ class UsersTestCase (ResourcesAPITestCase):
 
         #Check that template is correct
         template_data = data['template']['data']
-        self.assertEquals(len(template_data), 13)
-        for t_data in template_data:
-            self.assertIn(('required' and 'prompt' and 'name'),
-                          t_data)
-            self.assertTrue(any(k in t_data for k in ('value', 'object')))
-            self.assertIn(t_data['name'], ('nickname', 'address',
-                                           'avatar', 'birthday',
-                                           'email', 'familyName',
-                                           'gender', 'givenName',
-                                           'image', 'signature',
-                                           'skype', 'telephone',
-                                           'website'))
-        #Check that links are correct
-        links = data['links']
-        self.assertEquals(len(links), 1)  # Just one link
-        self.assertIn('prompt', links[0])
-        self.assertEquals(links[0]['rel'], 'messages-all')
-        self.assertEquals(links[0]['href'],
-                          flask.url_for('messages', _external=False))
+        self.assertEquals(len(template_data), 3)
+        t_item = template_data[0]
+        self.assertIn(('value' and 'prompt' and 'name'), t_item)
 
         #Check that items are correct.
         items = data['items']
@@ -409,13 +339,8 @@ class UsersTestCase (ResourcesAPITestCase):
         for item in items:
             self.assertIn(flask.url_for('users', _external=False),
                           item['href'])
-            self.assertIn('links', item)
-            self.assertEquals(2, len(item['data']))
-            for attribute in item['data']:
-                self.assertIn(attribute['name'], ('nickname', 'registrationdate'))
 
     def test_get_users_mimetype(self):
-        return True
         '''
         Checks that GET Messages return correct status code and data format
         '''
@@ -428,37 +353,28 @@ class UsersTestCase (ResourcesAPITestCase):
                           COLLECTIONJSON+";"+SANGZ_PROFILE)
 
     def test_add_user(self):
-        return True
         '''
         Checks that the user is added correctly
-
         '''
         print '('+self.test_add_user.__name__+')', self.test_add_user.__doc__
 
         # With a complete request
         resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_1_request)
-                               )
+                                headers={'Content-Type': APPJSON},
+                                data=json.dumps(self.new_user_request)
+                                )
         self.assertEquals(resp.status_code, 201)
-        self.assertIn('Location', resp.headers)
-        url = resp.headers['Location']
-        resp2 = self.client.get(url)
-        self.assertEquals(resp2.status_code, 200)
+
 
         #With just mandaaory parameters
         resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_2_request)
-                               )
+                                headers={'Content-Type': APPJSON},
+                                data=json.dumps(self.new_user_request2)
+                                )
         self.assertEquals(resp.status_code, 201)
-        self.assertIn('Location', resp.headers)
-        url = resp.headers['Location']
-        resp2 = self.client.get(url)
-        self.assertEquals(resp2.status_code, 200)
+
 
     def test_add_user_missing_mandatory(self):
-        return True
         '''
         Test that it returns error when is missing a mandatory data
         '''
@@ -466,33 +382,13 @@ class UsersTestCase (ResourcesAPITestCase):
 
         # Removing nickname
         resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_wrong_2_request)
-                               )
+                                headers={'Content-Type': APPJSON},
+                                data=json.dumps(self.new_user_request_missing)
+                                )
         self.assertEquals(resp.status_code, 400)
 
-        #Removing avatar
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_wrong_3_request)
-                               )
-        self.assertEquals(resp.status_code, 400)
-
-    def test_add_existing_user(self):
-        return True
-        '''
-        Testign that trying to add an existing user will fail
-
-        '''
-        print '('+self.test_add_existing_user.__name__+')', self.test_add_existing_user.__doc__
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_wrong_1_request)
-                               )
-        self.assertEquals(resp.status_code, 409)
 
     def test_add_bad_formmatted(self):
-        return True
         '''
         Test that it returns error when address is bad formatted
         '''
@@ -500,135 +396,85 @@ class UsersTestCase (ResourcesAPITestCase):
 
         # Removing nickname
         resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_wrong_4_request)
-                               )
+                                headers={'Content-Type': APPJSON},
+                                data=json.dumps(self.new_user_bad_format)
+                                )
         self.assertEquals(resp.status_code, 400)
-
-    def test_wrong_type(self):
-        return True
-        '''
-        Test that return adequate error if sent incorrect mime type
-        '''
-        print '('+self.test_wrong_type.__name__+')', self.test_wrong_type.__doc__
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': "application/json"},
-                                data=json.dumps(self.user_1_request)
-                               )
-        self.assertEquals(resp.status_code, 415)
 
 class UserTestCase (ResourcesAPITestCase):
 
     def setUp(self):
         super(UserTestCase, self).setUp()
-        user1_nickname = 'AxelW'
-        user2_nickname = 'Jacobino'
+        user1_id = 1
+        user2_id = 2
         self.url1 = resources.api.url_for(resources.User,
-                                          userid= user1_nickname)
+                                          userid= user1_id)
         self.url_wrong = resources.api.url_for(resources.User,
-                                               userid=user2_nickname)
+                                               userid=user2_id)
+
     def test_url(self):
-        return True
         '''
         Checks that the URL points to the right resource
         '''
         #NOTE: self.shortDescription() shuould work.
         print '('+self.test_url.__name__+')', self.test_url.__doc__
-        url = "/forum/api/users/AxelW/"
+        url = "/sangz/api/users/1"
         with resources.app.test_request_context(url):
             rule = flask.request.url_rule
             view_point = resources.app.view_functions[rule.endpoint].view_class
             self.assertEquals(view_point, resources.User)
 
-    '''#TODO  Implement methods for this class'''
+    def test_get_user(self):
+        """
+        Checks if values returned for single user are correct
+        :return: None, creates assertion on error
+        """
+        print '('+self.test_get_user.__name__+')', self.test_get_user.__doc__
+        #Check that I receive status code 200
+        resp = self.client.get(flask.url_for('user', userid=1))
+        self.assertEquals(resp.status_code, 200)
+
+        data = json.loads(resp.data)
+        self.assertEquals(data['id'], "1")
+        self.assertEquals(data['realname'], "Axel Foley")
+
+
+
+    # TODO: Test for PUT
+
+    # TODO: Test for DELETE
+
+
 
 class SongsTestCase (ResourcesAPITestCase):
 
-    user_1_request = {"template": {
+    song_1_data = {
+      "template": {
         "data": [
-            {"name": "nickname", "value": "Rigors"},
-            {"object": {"addressLocality":'Manchester', "addressCountry":"UK"},
-             "name": "address"},
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rigors@gmail.com"},
-            {"name": "familyName", "value": "Rigors"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Reagan"},
-            {"name": "image", "value": "image2.jpg"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-            {"name": "skype", "value": "rigors"},
-            {"name": "telephone", "value": "0445555666"},
-            {"name": "website", "value": "http://rigors.com"}
-        ]}
+          {
+            "name": "album",
+            "value": "new album"
+          },
+          {
+            "name": "artist",
+            "value": "new artist"
+          },
+          {
+            "name": "song_name",
+            "value": "new song"
+          },
+          {
+            "name": "user_id",
+            "value": "1"
+          },
+          {
+            "name": "media_location",
+            "value": "Desktop/music"
+          }
+        ]
+      }
     }
 
-    user_2_request = {"template": {
-        "data": [
-            {"name": "nickname", "value": "Rango"},
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
-    }
-
-    #Existing nickname
-    user_wrong_1_request =  {"template": {
-        "data": [
-            {"name": "nickname", "value": "AxelW"},
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
-    }
-
-    #Mssing nickname
-    user_wrong_2_request =  {"template": {
-        "data": [
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
-    }
-
-    #Missing mandatory
-    user_wrong_3_request = {"template": {
-        "data": [
-            {"name": "nickname", "value": "Rango"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
-    }
-
-    #Wrong address
-    user_wrong_4_request = {"template": {
-        "data": [
-            {"name": "nickname", "value": "Rango"},
-            {"name": "avatar", "value": "image3.jpg"},
-            {"name": "address", "value": "Indonesia, Spain"},
-            {"name": "birthday", "value": "2009-09-09"},
-            {"name": "email", "value": "rango@gmail.com"},
-            {"name": "familyName", "value": "Rango"},
-            {"name": "gender", "value": "Male"},
-            {"name": "givenName", "value": "Rangero"},
-            {"name": "signature", "value": "I am like Ronald McDonald"},
-        ]}
-    }
 
     def setUp(self):
         super(SongsTestCase, self).setUp()
@@ -636,196 +482,18 @@ class SongsTestCase (ResourcesAPITestCase):
                                          _external=False)
 
     def test_url(self):
-        return True
         '''
         Checks that the URL points to the right resource
         '''
         #NOTE: self.shortDescription() shuould work.
-        _url = '/forum/api/users/'
+        _url = '/sangz/api/songs/'
         print '('+self.test_url.__name__+')', self.test_url.__doc__,
         with resources.app.test_request_context(_url):
             rule = flask.request.url_rule
             view_point = resources.app.view_functions[rule.endpoint].view_class
-            self.assertEquals(view_point, resources.Users)
+            self.assertEquals(view_point, resources.Songs)
 
-    def test_get_songs(self):
-        return True
-        '''
-        Checks that GET users return correct status code and data format
-        '''
-        print '('+self.test_get_users.__name__+')', self.test_get_users.__doc__
-        #Check that I receive status code 200
-        resp = self.client.get(flask.url_for('users'))
-        self.assertEquals(resp.status_code, 200)
-
-        # Check that I receive a collection and adequate href
-        data = json.loads(resp.data)['collection']
-        self.assertEquals(resources.api.url_for(resources.Users,
-                                                _external=False),
-                          data['href'])
-
-        #Check that template is correct
-        template_data = data['template']['data']
-        self.assertEquals(len(template_data), 13)
-        for t_data in template_data:
-            self.assertIn(('required' and 'prompt' and 'name'),
-                          t_data)
-            self.assertTrue(any(k in t_data for k in ('value', 'object')))
-            self.assertIn(t_data['name'], ('nickname', 'address',
-                                           'avatar', 'birthday',
-                                           'email', 'familyName',
-                                           'gender', 'givenName',
-                                           'image', 'signature',
-                                           'skype', 'telephone',
-                                           'website'))
-        #Check that links are correct
-        links = data['links']
-        self.assertEquals(len(links), 1)  # Just one link
-        self.assertIn('prompt', links[0])
-        self.assertEquals(links[0]['rel'], 'messages-all')
-        self.assertEquals(links[0]['href'],
-                          flask.url_for('messages', _external=False))
-
-        #Check that items are correct.
-        items = data['items']
-        self.assertEquals(len(items), initial_users)
-        for item in items:
-            self.assertIn(flask.url_for('users', _external=False),
-                          item['href'])
-            self.assertIn('links', item)
-            self.assertEquals(2, len(item['data']))
-            for attribute in item['data']:
-                self.assertIn(attribute['name'], ('nickname', 'registrationdate'))
-
-    def test_get_users_mimetype(self):
-        return True
-        '''
-        Checks that GET Messages return correct status code and data format
-        '''
-        print '('+self.test_get_users_mimetype.__name__+')', self.test_get_users_mimetype.__doc__
-
-        #Check that I receive status code 200
-        resp = self.client.get(self.url)
-        self.assertEquals(resp.status_code, 200)
-        self.assertEquals(resp.headers.get('Content-Type',None),
-                          COLLECTIONJSON+";"+SANGZ_PROFILE)
-
-    def test_add_user(self):
-        return True
-        '''
-        Checks that the user is added correctly
-
-        '''
-        print '('+self.test_add_user.__name__+')', self.test_add_user.__doc__
-
-        # With a complete request
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_1_request)
-                               )
-        self.assertEquals(resp.status_code, 201)
-        self.assertIn('Location', resp.headers)
-        url = resp.headers['Location']
-        resp2 = self.client.get(url)
-        self.assertEquals(resp2.status_code, 200)
-
-        #With just mandaaory parameters
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_2_request)
-                               )
-        self.assertEquals(resp.status_code, 201)
-        self.assertIn('Location', resp.headers)
-        url = resp.headers['Location']
-        resp2 = self.client.get(url)
-        self.assertEquals(resp2.status_code, 200)
-
-    def test_add_user_missing_mandatory(self):
-        return True
-        '''
-        Test that it returns error when is missing a mandatory data
-        '''
-        print '('+self.test_add_user_missing_mandatory.__name__+')', self.test_add_user_missing_mandatory.__doc__
-
-        # Removing nickname
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_wrong_2_request)
-                               )
-        self.assertEquals(resp.status_code, 400)
-
-        #Removing avatar
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_wrong_3_request)
-                               )
-        self.assertEquals(resp.status_code, 400)
-
-    def test_add_existing_user(self):
-        return True
-        '''
-        Testign that trying to add an existing user will fail
-
-        '''
-        print '('+self.test_add_existing_user.__name__+')', self.test_add_existing_user.__doc__
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_wrong_1_request)
-                               )
-        self.assertEquals(resp.status_code, 409)
-
-    def test_add_bad_formmatted(self):
-        return True
-        '''
-        Test that it returns error when address is bad formatted
-        '''
-        print '('+self.test_add_bad_formmatted.__name__+')', self.test_add_bad_formmatted.__doc__
-
-        # Removing nickname
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': COLLECTIONJSON},
-                                data=json.dumps(self.user_wrong_4_request)
-                               )
-        self.assertEquals(resp.status_code, 400)
-
-    def test_wrong_type(self):
-        return True
-        '''
-        Test that return adequate error if sent incorrect mime type
-        '''
-        print '('+self.test_wrong_type.__name__+')', self.test_wrong_type.__doc__
-        resp = self.client.post(resources.api.url_for(resources.Users),
-                                headers={'Content-Type': "application/json"},
-                                data=json.dumps(self.user_1_request)
-                               )
-        self.assertEquals(resp.status_code, 415)
-
-class SongTestCase (ResourcesAPITestCase):
-
-    def setUp(self):
-        super(SongTestCase, self).setUp()
-        song1_id = 1
-        song2_id = 666
-        self.url1 = resources.api.url_for(resources.Song,
-                                          songid=song1_id)
-        self.url_wrong = resources.api.url_for(resources.Song,
-                                               songid=song2_id)
-    def test_url(self):
-        return True
-        '''
-        Checks that the URL points to the right resource
-        '''
-        #NOTE: self.shortDescription() shuould work.
-        print '('+self.test_url.__name__+')', self.test_url.__doc__
-        url = "/forum/api/users/AxelW/"
-        with resources.app.test_request_context(url):
-            rule = flask.request.url_rule
-            view_point = resources.app.view_functions[rule.endpoint].view_class
-            self.assertEquals(view_point, resources.User)
-
-    '''#TODO Implement methods for this class'''
-
-
+    # TODO complete the tests
 
 if __name__ == '__main__':
     print 'Start running tests'

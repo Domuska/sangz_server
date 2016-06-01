@@ -170,7 +170,7 @@ class Users(Resource):
             collection.items.append(item)
 
         string_data = str(collection)
-        return Response(string_data, 200, mimetype="application/vnd.collection+json"+";"+SANGZ_USER_PROFILE)
+        return Response(string_data, 200, mimetype="application/vnd.collection+json"+";"+APIARY_PROFILES_URL)
 
     def post (self):
         if MIME_TYPE_APPLICATION_JSON != request.headers.get('Content-type', '').lower():

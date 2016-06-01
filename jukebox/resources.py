@@ -140,13 +140,6 @@ def get_playlist():
 # The skeletons are still missing their proper arguments, add them as you work.
 # The original methods from exercise 3 are removed, but take a look at them for help as you work.
 
-#class Frontpage(Resource):
-#
-#    def get(self):
-#       return Response("you're at the front page of sangz service", 200, mimetype="text/html")
-#
-#*** Removed as its of no major use in the android client. Playlist is the new "homepage"
-
 class Users(Resource):
 
     def get(self):
@@ -401,7 +394,6 @@ class Song(Resource):
             response['songname'] = songs_db['song_name']
 
             links = {"self": {"href": api.url_for(Song, songid=songid)},
-                     #"home": {"href": api.url_for(Frontpage)},
                      "users": {"href": api.url_for(Users)},
                      "songs": {"href": api.url_for(Songs)},
                      "playlist": {"href": api.url_for(Playlist)},
@@ -688,7 +680,7 @@ class Chat(Resource):
 
         Link relations in items: None
 
-        Link relations: self, front page
+        Link relations: self
 
         Response status codes
         200 if all is okay
@@ -703,9 +695,6 @@ class Chat(Resource):
         # todo: add links when other resources are added to the routes
 
         collection['links'] = [
-            #{'prompt': 'Go back to home page',
-             #'rel': 'homepage',
-             #'href': api.url_for(Frontpage)},
             {"href": api.url_for(Users),
              "rel": "Users",
              "prompt": "Get the list of all users"},
@@ -823,7 +812,6 @@ api.add_resource(Users, '/sangz/api/users/',
                  endpoint='users')
 api.add_resource(User, '/sangz/api/users/<userid>',
                  endpoint = 'user')
-#api.add_resource(Frontpage, '/sangz/api/', endpoint='')
 api.add_resource(Playlist, '/sangz/api/playlist/',
                  endpoint='playlist')
 api.add_resource(Songs, '/sangz/api/songs/',
